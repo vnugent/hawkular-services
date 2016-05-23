@@ -25,14 +25,23 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
     </xsl:copy>
+
+    <xsl:comment> Alerts </xsl:comment>
+    <jms-topic name="HawkularAlertData" entries="java:/topic/HawkularAlertData"/>
+    <jms-queue name="HawkularAlertsPluginsQueue" entries="java:/queue/HawkularAlertsPluginsQueue"/>
+    <jms-queue name="HawkularAlertsActionsResponseQueue" entries="java:/queue/HawkularAlertsActionsResponseQueue"/>
+    <jms-topic name="HawkularCommandEvent" entries="java:/topic/HawkularCommandEvent"/>
+    <jms-topic name="HawkularAlertsActionsTopic" entries="java:/topic/HawkularAlertsActionsTopic"/>
+
+    <xsl:comment> Metrics </xsl:comment>
     <jms-queue name="hawkular/metrics/gauges/new" entries="java:/queue/hawkular/metrics/gauges/new java:jboss/exported/queue/hawkular/metrics/gauges/new"/>
     <jms-queue name="hawkular/metrics/counters/new" entries="java:/queue/hawkular/metrics/counters/new java:jboss/exported/queue/hawkular/metrics/counters/new"/>
     <jms-queue name="hawkular/metrics/availability/new" entries="java:/queue/hawkular/metrics/availability/new java:jboss/exported/queue/hawkular/metrics/availability/new"/>
-
-    <jms-topic name="HawkularInventoryChanges" entries="java:/topic/HawkularInventoryChanges"/>
-    <jms-topic name="HawkularCommandEvent" entries="java:/topic/HawkularCommandEvent"/>
     <jms-topic name="HawkularAvailData" entries="java:/topic/HawkularAvailData java:jboss/exported/topic/HawkularAvailData"/>
     <jms-topic name="HawkularMetricData" entries="java:/topic/HawkularMetricData java:jboss/exported/topic/HawkularMetricData"/>
+
+    <xsl:comment> Inventory </xsl:comment>
+    <jms-topic name="HawkularInventoryChanges" entries="java:/topic/HawkularInventoryChanges"/>
   </xsl:template>
 
   <!-- copy everything else as-is -->

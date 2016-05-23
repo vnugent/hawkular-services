@@ -40,6 +40,13 @@
     <subsystem>hawkular-services-logging.xml</subsystem>
   </xsl:template>
 
+  <!-- Replace infinispan.xml with hawkular-services-infinispan.xml -->
+  <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']/*[local-name()='subsystem' and text()='infinispan.xml']">
+    <xsl:copy>
+      <xsl:text>hawkular-services-infinispan.xml</xsl:text>
+    </xsl:copy>
+  </xsl:template>
+
   <!-- copy everything else as-is -->
   <xsl:template match="node()|comment()|@*">
     <xsl:copy>

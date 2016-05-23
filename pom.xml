@@ -66,11 +66,15 @@
 
   <properties>
 
-    <version.org.hawkular.agent>0.17.6.Final-SRC-revision-fdf06528614d28b16cc270039a94a744594cf19b</version.org.hawkular.agent>
-    <version.org.hawkular.alerts>1.0.2.Final-SRC-revision-4fa87cc3c3be7e6e9c6f2a309a31acfbc267d525</version.org.hawkular.alerts>
+    <version.org.hawkular.agent>0.17.6.Final-SRC-revision-626160dead39fec5b1e76f08484a00e6a7b96802</version.org.hawkular.agent>
+    <version.org.hawkular.alerts>1.1.0.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.7.2.Final</version.org.hawkular.commons>
     <version.org.hawkular.inventory>0.16.0.Final-SRC-revision-95d9738893fd0a536ca08919ff0a512dad2a90db</version.org.hawkular.inventory>
     <version.org.hawkular.metrics>0.16.0.Final-SRC-revision-1b96d5e7e28863a61cae267e66c53659726191af</version.org.hawkular.metrics>
+
+    <hawkular.agent.enabled>false</hawkular.agent.enabled>
+    <hawkular.rest.user /><!-- empty in the default profile, set only in the dev profile -->
+    <hawkular.rest.password /><!-- empty in the default profile, set only in the dev profile -->
 
   </properties>
 
@@ -119,6 +123,25 @@
         <type>war</type>
       </dependency>
 
+      <dependency>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+        <version>${version.org.wildfly}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <!-- A profile to build a development distro -->
+      <id>dev</id>
+      <properties>
+        <hawkular.agent.enabled>true</hawkular.agent.enabled>
+        <hawkular.rest.user>jdoe</hawkular.rest.user>
+        <hawkular.rest.password>password</hawkular.rest.password>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>

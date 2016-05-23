@@ -83,4 +83,53 @@
 
     </plugins>
   </build>
+
+
+  <profiles>
+    <profile>
+      <!-- A profile to build a development distro -->
+      <id>dev</id>
+
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-itest-users</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>java</executable>
+                  <environmentVariables>
+                    <JBOSS_HOME>${project.build.directory}/${project.build.finalName}</JBOSS_HOME>
+                  </environmentVariables>
+                  <arguments>
+                    <argument>-jar</argument>
+                    <argument>${project.build.directory}/${project.build.finalName}/jboss-modules.jar</argument>
+                    <argument>-mp</argument>
+                    <argument>${project.build.directory}/${project.build.finalName}/modules</argument>
+                    <argument>org.jboss.as.domain-add-user</argument>
+                    <argument>-a</argument>
+                    <argument>--user</argument>
+                    <argument>${hawkular.rest.user}</argument>
+                    <argument>--password</argument>
+                    <argument>${hawkular.rest.password}</argument>
+                    <argument>--group</argument>
+                    <argument>read-write,read-only</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>

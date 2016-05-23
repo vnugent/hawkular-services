@@ -24,7 +24,7 @@
   </dependencies>
 
   <config>
-    <standalone template="configuration/standalone/hawkular-nest-template.xml" subsystems="configuration/standalone/hawkular-services-subsystems.xml" output-file="standalone/configuration/standalone.xml" />
+    <standalone template="configuration/standalone/hawkular-services-template.xml" subsystems="configuration/standalone/hawkular-services-subsystems.xml" output-file="standalone/configuration/standalone.xml" />
   </config>
 
   <copy-artifacts>

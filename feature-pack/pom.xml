@@ -69,6 +69,11 @@
       <type>war</type>
     </dependency>
 
+    <dependency>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -87,6 +92,7 @@
             </goals>
             <configuration>
               <artifactItems>
+
                 <artifactItem>
                   <groupId>org.hawkular.commons</groupId>
                   <artifactId>hawkular-nest-feature-pack</artifactId>
@@ -94,6 +100,7 @@
                   <includes>subsystem-templates/*.xml,configuration/**/*.xml</includes>
                   <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
                 </artifactItem>
+
                 <artifactItem>
                   <groupId>org.hawkular.agent</groupId>
                   <artifactId>hawkular-wildfly-agent-feature-pack</artifactId>
@@ -101,6 +108,14 @@
                   <includes>subsystem-templates/*.xml,configuration/**/*.xml</includes>
                   <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
                 </artifactItem>
+
+                <artifactItem>
+                  <groupId>org.wildfly</groupId>
+                  <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+                  <includes>subsystem-templates/*.xml</includes>
+                  <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
+                </artifactItem>
+
               </artifactItems>
             </configuration>
           </execution>
@@ -137,6 +152,28 @@
 
                 <transformationSet>
                   <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template.xsl</stylesheet>
+                  <!-- without the default user in the default profile -->
+                  <parameters>
+                    <parameter>
+                      <name>hawkular.agent.enabled</name>
+                      <value>${hawkular.agent.enabled}</value>
+                    </parameter>
+                  </parameters>
+                  <includes>
+                    <include>configuration/standalone/hawkular-nest-template.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>configuration/standalone/hawkular-services-template.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
                   <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-logging.xsl</stylesheet>
                   <includes>
                     <include>subsystem-templates/hawkular-nest-logging.xml</include>
@@ -161,6 +198,21 @@
                     <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                       <pattern>^subsystem-templates/hawkular-nest-(.*)\.xml$</pattern>
                       <replacement>subsystem-templates/hawkular-services-$1.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-infinispan.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/infinispan.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-infinispan.xml</replacement>
                     </fileMapper>
                   </fileMappers>
                 </transformationSet>
@@ -211,4 +263,66 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <!-- A profile to build a development distro -->
+      <id>dev</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>transform-xmls-dev</id>
+                <phase>process-resources</phase><!-- after generate-resources -->
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+                <configuration>
+                  <forceCreation>true</forceCreation>
+                  <transformationSets>
+
+                    <transformationSet>
+                      <dir>${project.build.directory}/feature-pack-resources</dir>
+                      <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template.xsl</stylesheet>
+                      <parameters>
+                        <parameter>
+                          <name>hawkular.agent.enabled</name>
+                          <value>${hawkular.agent.enabled}</value>
+                        </parameter>
+                        <!-- with the default user in the dev profile -->
+                        <parameter>
+                          <name>hawkular.rest.user</name>
+                          <value>${hawkular.rest.user}</value>
+                        </parameter>
+                        <parameter>
+                          <name>hawkular.rest.password</name>
+                          <value>${hawkular.rest.password}</value>
+                        </parameter>
+                      </parameters>
+                      <includes>
+                        <include>configuration/standalone/hawkular-nest-template.xml</include>
+                      </includes>
+                      <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^.*$</pattern>
+                          <replacement>configuration/standalone/hawkular-services-template.xml</replacement>
+                        </fileMapper>
+                      </fileMappers>
+                    </transformationSet>
+
+                  </transformationSets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>

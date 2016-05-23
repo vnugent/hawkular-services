@@ -23,14 +23,6 @@
 
   <interactiveMode>false</interactiveMode>
 
-  <servers>
-    <server>
-      <id>jboss-snapshots-repository</id>
-      <username>${env.NEXUS_DEPLOY_USERNAME}</username>
-      <password>${env.NEXUS_DEPLOY_PASSWORD}</password>
-    </server>
-  </servers>
-
   <profiles>
     <profile>
       <id>securecentral</id>
