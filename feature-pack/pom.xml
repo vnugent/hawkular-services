@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    and other contributors as indicated by the @author tags.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.hawkular.services</groupId>
+    <artifactId>hawkular-services</artifactId>
+    <version>0.0.1.Final-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>hawkular-services-feature-pack</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Hawkular Services Feature Pack</name>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-nest-feature-pack</artifactId>
+      <type>zip</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.agent</groupId>
+      <artifactId>hawkular-wildfly-agent-feature-pack</artifactId>
+      <type>zip</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.alerts</groupId>
+      <artifactId>hawkular-alerts-rest</artifactId>
+      <type>war</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.alerts</groupId>
+      <artifactId>hawkular-alerts-actions-email</artifactId>
+      <type>war</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.inventory</groupId>
+      <artifactId>hawkular-inventory-dist</artifactId>
+      <type>war</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.metrics</groupId>
+      <artifactId>hawkular-metrics-component</artifactId>
+      <type>war</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <!-- Unpack the upstream artifacts that host various *.xml files that we want to use unchanged or adapt in the next steps -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-deps</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+
+                <artifactItem>
+                  <groupId>org.hawkular.commons</groupId>
+                  <artifactId>hawkular-nest-feature-pack</artifactId>
+                  <type>zip</type>
+                  <includes>subsystem-templates/*.xml,configuration/**/*.xml</includes>
+                  <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
+                </artifactItem>
+
+                <artifactItem>
+                  <groupId>org.hawkular.agent</groupId>
+                  <artifactId>hawkular-wildfly-agent-feature-pack</artifactId>
+                  <type>zip</type>
+                  <includes>subsystem-templates/*.xml,configuration/**/*.xml</includes>
+                  <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
+                </artifactItem>
+
+                <artifactItem>
+                  <groupId>org.wildfly</groupId>
+                  <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+                  <includes>subsystem-templates/*.xml</includes>
+                  <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
+                </artifactItem>
+
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Enhance various *.xml files taken from our dependencies using XSL transformations -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>transform-xmls</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>transform</goal>
+            </goals>
+            <configuration>
+              <transformationSets>
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-subsystems.xsl</stylesheet>
+                  <includes>
+                    <include>configuration/standalone/hawkular-nest-subsystems.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>configuration/standalone/hawkular-services-subsystems.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template.xsl</stylesheet>
+                  <!-- without the default user in the default profile -->
+                  <parameters>
+                    <parameter>
+                      <name>hawkular.agent.enabled</name>
+                      <value>${hawkular.agent.enabled}</value>
+                    </parameter>
+                  </parameters>
+                  <includes>
+                    <include>configuration/standalone/hawkular-nest-template.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>configuration/standalone/hawkular-services-template.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-logging.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/hawkular-nest-logging.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^subsystem-templates/hawkular-nest-(.*)\.xml$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-$1.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-messaging-activemq.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/hawkular-nest-messaging-activemq.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^subsystem-templates/hawkular-nest-(.*)\.xml$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-$1.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-infinispan.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/infinispan.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-infinispan.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+              </transformationSets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.wildfly.build</groupId>
+        <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>feature-pack-build</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <configuration>
+              <resources-dir>target/feature-pack-resources</resources-dir>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>assembly.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+              <tarLongFileMode>gnu</tarLongFileMode>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <!-- A profile to build a development distro -->
+      <id>dev</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>transform-xmls-dev</id>
+                <phase>process-resources</phase><!-- after generate-resources -->
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+                <configuration>
+                  <forceCreation>true</forceCreation>
+                  <transformationSets>
+
+                    <transformationSet>
+                      <dir>${project.build.directory}/feature-pack-resources</dir>
+                      <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template.xsl</stylesheet>
+                      <parameters>
+                        <parameter>
+                          <name>hawkular.agent.enabled</name>
+                          <value>${hawkular.agent.enabled}</value>
+                        </parameter>
+                        <!-- with the default user in the dev profile -->
+                        <parameter>
+                          <name>hawkular.rest.user</name>
+                          <value>${hawkular.rest.user}</value>
+                        </parameter>
+                        <parameter>
+                          <name>hawkular.rest.password</name>
+                          <value>${hawkular.rest.password}</value>
+                        </parameter>
+                      </parameters>
+                      <includes>
+                        <include>configuration/standalone/hawkular-nest-template.xml</include>
+                      </includes>
+                      <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^.*$</pattern>
+                          <replacement>configuration/standalone/hawkular-services-template.xml</replacement>
+                        </fileMapper>
+                      </fileMappers>
+                    </transformationSet>
+
+                  </transformationSets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>
