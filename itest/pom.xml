@@ -78,6 +78,31 @@
     </dependency>
 
     <dependency>
+      <groupId>com.squareup.okhttp</groupId>
+      <artifactId>okhttp-ws</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-bus-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-command-gateway-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-command-gateway-itest</artifactId>
+      <scope>test</scope>
+      <type>test-jar</type>
+    </dependency>
+
+    <dependency>
       <groupId>org.hawkular.inventory</groupId>
       <artifactId>hawkular-inventory-api</artifactId>
       <scope>test</scope>
@@ -334,7 +359,7 @@
                 <dependency>org.hawkular.commons:hawkular-command-gateway-itest</dependency>
               </dependenciesToScan>
               <includes>
-                <include>${hawkular.agent.itest.includes}</include>
+                <include>${hawkular.services.itest.includes}</include>
               </includes>
               <systemPropertyVariables>
                 <jboss.home>${project.build.directory}/${hawkular.services.dist.finalName}</jboss.home>
