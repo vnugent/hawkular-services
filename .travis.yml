@@ -23,7 +23,7 @@ install:
 - git fetch origin --unshallow || true
 
 script:
-- mvn -s .travis.maven.settings.xml verify -Dfailsafe.useFile=false | grep -vF "[INFO] Downloading:" | grep
+- mvn -s .travis.maven.settings.xml verify -Pitest -Dfailsafe.useFile=false | grep -vF "[INFO] Downloading:" | grep
   -vF "[INFO] Downloaded:"; test ${PIPESTATUS[0]} -eq 0
 
 before_cache:

@@ -36,7 +36,6 @@
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-services-feature-pack</artifactId>
-      <version>${project.version}</version>
       <type>zip</type>
     </dependency>
   </dependencies>
