@@ -16,13 +16,13 @@
  */
 package org.hawkular.services.rest.test;
 
+import org.hawkular.services.rest.test.TestClient.Retry;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.logging.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Objects;
 
 /**
  * Metrics integration tests.
@@ -30,40 +30,34 @@ import com.google.common.base.Objects;
  * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
  */
 public class MetricsITest extends AbstractTestBase {
+    public static final String GROUP = "MetricsITest";
     private static final Logger log = Logger.getLogger(MetricsITest.class);
-    private static final String metricsPath = "/hawkular/metrics";
+    public static final String metricsPath = "/hawkular/metrics";
     private static final String gaugeId = MetricsITest.class.getSimpleName() + ".metric";
     private static final long gaugeTime = System.currentTimeMillis();
     private static final int gaugeValue = 42;
 
-    @Test
+    @Test(groups = { GROUP })
     @RunAsClient
     public void metricsUp() throws Throwable {
 
-        final int attemptsCount = 50;
-        final int retryAfterMs = 500;
         final String path = metricsPath + "/status";
         final String expectedState = "STARTED";
-        String foundState = null;
-        for (int i = 0; i < attemptsCount; i++) {
-            JsonNode metricsStatus = testClient.newRequest()
-                    .path(path).get(200, attemptsCount, retryAfterMs)
-                    .asJson();
-            log.tracef("Got metrics status [%s] on attempt[%d]", metricsStatus, i);
-            foundState = metricsStatus.get("MetricsService").asText();
-            if (Objects.equal(expectedState, foundState)) {
-                /* expected */
-                return;
-            }
-            /* otherwise retry */
-            log.tracef("Retrying to get [%s] in [%d] ms", path, retryAfterMs);
-            Thread.sleep(retryAfterMs);
-        }
-        Assert.fail(
-                "Metrics service still not in state [" + expectedState + "] but rather in state [" + foundState + "]");
+        testClient.newRequest()
+                .path(path)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(metricsStatus -> {
+                                    log.tracef("Got Metrics status [%s]", metricsStatus);
+                                    String foundState = metricsStatus.get("MetricsService").asText();
+                                    Assert.assertEquals(foundState, expectedState);
+                            });
+                }, Retry.times(50).delay(500));
     }
 
-    @Test(dependsOnMethods = { "metricsUp" })
+    @Test(groups = { GROUP }, dependsOnMethods = { "metricsUp" })
     @RunAsClient
     public void postGet() throws Exception {
 

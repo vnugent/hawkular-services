@@ -19,6 +19,7 @@ package org.hawkular.services.rest.test;
 import org.hawkular.inventory.api.model.Environment;
 import org.hawkular.inventory.api.model.Resource;
 import org.hawkular.inventory.api.model.ResourceType;
+import org.hawkular.services.rest.test.TestClient.Retry;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.logging.Logger;
 import org.testng.Assert;
@@ -32,40 +33,35 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
  */
 public class InventoryITest extends AbstractTestBase {
+    public static final String GROUP = "InventoryITest";
     private static final Logger log = Logger.getLogger(InventoryITest.class);
     private static final String testResourceTypeId = "testResourceType";
     private static final String testResourceId = "testResource";
     private static final String testEnvironmentId = "testEnvironment";
-    private static final String inventoryPath = "/hawkular/inventory";
+    public static final String inventoryPath = "/hawkular/inventory";
 
-    @Test
+    @Test(groups = { GROUP })
     @RunAsClient
     public void inventoryUp() throws Throwable {
 
-        final int attemptsCount = 50;
-        final int retryAfterMs = 250;
         final String path = inventoryPath + "/status";
-        boolean foundState = false;
-        for (int i = 0; i < attemptsCount; i++) {
-            JsonNode inventoryStatus = testClient.newRequest()
-                    .path(path).get(200, attemptsCount, retryAfterMs)
-                    .asJson();
-            log.tracef("Got inventory status [%s] on attempt[%d]", inventoryStatus, i);
-            foundState = inventoryStatus.get("Initialized").asBoolean();
-            if (foundState) {
-                /* expected */
-                return;
-            }
-            /* otherwise retry */
-            log.tracef("Retrying to get [%s] in [%d] ms", path, retryAfterMs);
-            Thread.sleep(retryAfterMs);
-        }
-        Assert.fail(String.format("Inventory service still not Initialized after trying [%d] times with delay [%d] ms",
-                attemptsCount, retryAfterMs));
+        testClient.newRequest()
+                .path(path).get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(inventoryStatus -> {
+                                log.tracef("Got inventory status [%s]", inventoryStatus);
+                                Assert.assertTrue(inventoryStatus.get("Initialized").asBoolean(),
+                                        String.format(
+                                                "[%s] should have returned a state with Initialized == true, while it retruened [%s]",
+                                                testResponse.getRequest(), inventoryStatus));
+                            });
+                }, Retry.times(50).delay(250));
 
     }
 
-    @Test(dependsOnMethods = { "inventoryUp" })
+    @Test(groups = { GROUP }, dependsOnMethods = { "inventoryUp" })
     @RunAsClient
     public void postGetDelete() throws Throwable {
         /* ensure our env not there already */
