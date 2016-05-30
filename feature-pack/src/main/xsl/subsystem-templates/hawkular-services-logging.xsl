@@ -24,6 +24,12 @@
   <xsl:template match="//*[local-name()='config']/*[local-name()='supplement' and @name='default']/*[local-name()='replacement' and @placeholder='LOGGERS']">
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
+      <logger category="org.hawkular.agent">
+        <level name="${{hawkular.log.agent:INFO}}" />
+      </logger>
+      <logger category="org.hawkular.alerts">
+        <level name="${{hawkular.log.alerts:INFO}}" />
+      </logger>
       <logger category="org.hawkular.metrics">
         <level name="${{hawkular.log.metrics:INFO}}" />
       </logger>
