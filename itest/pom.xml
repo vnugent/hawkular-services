@@ -196,6 +196,7 @@
       <id>itest</id>
       <properties>
         <surefire.testng.verbose>3</surefire.testng.verbose>
+        <trimStackTrace>false</trimStackTrace><!-- maven-failsafe-plugin -->
         <debug.failsafe.argLine />
         <debug.wildfly.argLine />
         <hawkular.services.itest.includes>**/*ITest.class</hawkular.services.itest.includes>
@@ -205,6 +206,10 @@
 
         <hawkular.agent.itest.mgmt.user>itest-admin</hawkular.agent.itest.mgmt.user>
         <!-- <hawkular.agent.itest.mgmt.password> set to a random value using gmaven plugin </hawkular.agent.itest.mgmt.password> -->
+        <hawkular.itest.rest.tenantId>itest-rest-tenant</hawkular.itest.rest.tenantId>
+        <hawkular.itest.rest.user>itest-rest</hawkular.itest.rest.user>
+        <!-- <hawkular.itest.rest.password> set to a random value using gmaven plugin </hawkular.itest.rest.password> -->
+        <hawkular.itest.rest.feedId>itest-feed</hawkular.itest.rest.feedId>
         <hawkular.itest.rest.user>itest-rest</hawkular.itest.rest.user>
         <!-- <hawkular.itest.rest.password> set to a random value using gmaven plugin </hawkular.itest.rest.password> -->
 
@@ -228,7 +233,7 @@
         <hawkular.log.datastax.driver>INFO</hawkular.log.datastax.driver>
         <hawkular.log.cassandra>INFO</hawkular.log.cassandra>
 
-        <hawkular.log.rest.test>INFO</hawkular.log.rest.test><!-- log level for all itests -->
+        <hawkular.log.rest.test>TRACE</hawkular.log.rest.test><!-- log level for all itests -->
         <hawkular.log.adhoc.name>dummy</hawkular.log.adhoc.name> <!-- put a logger name here that you want to debug, such as org.hawkular.services.rest.test.InventoryITest -->
         <hawkular.log.adhoc.level>TRACE</hawkular.log.adhoc.level>
       </properties>
@@ -352,6 +357,40 @@
           </plugin>
 
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>transform-xmls</id>
+                <phase>process-classes</phase> <!-- after compile where we privisioned the distro -->
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+                <configuration>
+                  <transformationSets>
+
+                    <transformationSet>
+                      <dir>${project.build.directory}/${hawkular.services.dist.finalName}/standalone/configuration</dir>
+                      <stylesheet>${basedir}/src/test/xsl/standalone.xsl</stylesheet>
+                      <includes>
+                        <include>standalone.xml</include>
+                      </includes>
+                      <outputDir>${project.build.directory}/${hawkular.services.dist.finalName}/standalone/configuration</outputDir>
+                      <fileMappers>
+                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                          <pattern>^.*$</pattern>
+                          <replacement>standalone-with-reduced-agent.xml</replacement>
+                        </fileMapper>
+                      </fileMappers>
+                    </transformationSet>
+
+                  </transformationSets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
@@ -368,6 +407,8 @@
                     -Djboss.bind.address=${hawkular.bind.address}
                     -Djboss.socket.binding.port-offset=${hawkular.port.offset}
                     -Dhawkular.agent.enabled=${hawkular.agent.enabled}
+                    -Dhawkular.rest.tenantId=${hawkular.itest.rest.tenantId}
+                    -Dhawkular.rest.feedId=${hawkular.itest.rest.feedId}
                     -Dhawkular.rest.user=${hawkular.itest.rest.user}
                     -Dhawkular.rest.password=${hawkular.itest.rest.password}
                     -Dhawkular.log.root=${hawkular.log.root}
@@ -384,10 +425,13 @@
                     -Dhawkular.log.cassandra=${hawkular.log.cassandra}
                     ${debug.wildfly.argLine}
                 </jboss.options>
+                <jboss.server.config.file.name>standalone-with-reduced-agent.xml</jboss.server.config.file.name>
 
                 <hawkular.agent.itest.mgmt.user>${hawkular.agent.itest.mgmt.user}</hawkular.agent.itest.mgmt.user>
                 <hawkular.agent.itest.mgmt.password>${hawkular.agent.itest.mgmt.password}</hawkular.agent.itest.mgmt.password>
 
+                <hawkular.itest.rest.tenantId>${hawkular.itest.rest.tenantId}</hawkular.itest.rest.tenantId>
+                <hawkular.itest.rest.feedId>${hawkular.itest.rest.feedId}</hawkular.itest.rest.feedId>
                 <hawkular.itest.rest.user>${hawkular.itest.rest.user}</hawkular.itest.rest.user>
                 <hawkular.itest.rest.password>${hawkular.itest.rest.password}</hawkular.itest.rest.password>
 

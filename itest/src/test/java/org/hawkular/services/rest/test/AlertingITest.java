@@ -17,13 +17,11 @@
 package org.hawkular.services.rest.test;
 
 import org.hawkular.alerts.api.model.trigger.Trigger;
+import org.hawkular.services.rest.test.TestClient.Retry;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.logging.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Objects;
 
 /**
  * Alerting integration tests.
@@ -32,37 +30,30 @@ import com.google.common.base.Objects;
  */
 public class AlertingITest extends AbstractTestBase {
     private static final Logger log = Logger.getLogger(AlertingITest.class);
+    public static final String GROUP = "AlertingITest";
     private static final String alertingPath = "/hawkular/alerts";
 
-    @Test
+    @Test(groups = { GROUP })
     @RunAsClient
     public void alertingUp() throws Throwable {
 
-        final int attemptsCount = 50;
-        final int retryAfterMs = 250;
         final String path = alertingPath + "/status";
         final String expectedState = "STARTED";
-        String foundState = null;
-        for (int i = 0; i < attemptsCount; i++) {
-            JsonNode alertingStatus = testClient.newRequest()
-                    .path(path).get(200, attemptsCount, retryAfterMs)
-                    .asJson();
-            log.tracef("Got alerting status [%s] on attempt[%d]", alertingStatus, i);
-            foundState = alertingStatus.get("status").asText();
-            if (Objects.equal(expectedState, foundState)) {
-                /* expected */
-                return;
-            }
-            /* otherwise retry */
-            log.tracef("Retrying to get [%s] in [%d] ms", path, retryAfterMs);
-            Thread.sleep(retryAfterMs);
-        }
-        Assert.fail(String.format("Alerting service still not Initialized after trying [%d] times with delay [%d] ms",
-                attemptsCount, retryAfterMs));
-
+        testClient.newRequest()
+                .path(path)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(alertingStatus -> {
+                                    log.tracef("Got Alerting status [%s]", alertingStatus);
+                                    String foundState = alertingStatus.get("status").asText();
+                                    Assert.assertEquals(foundState, expectedState);
+                            });
+                }, Retry.times(20).delay(250));
     }
 
-    @Test(dependsOnMethods = { "alertingUp" })
+    @Test(dependsOnMethods = { "alertingUp" }, groups = { GROUP })
     @RunAsClient
     public void postGetDelete() throws Throwable {
         final String triggersPath = alertingPath + "/triggers";

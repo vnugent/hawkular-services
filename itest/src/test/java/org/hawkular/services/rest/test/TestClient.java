@@ -18,12 +18,16 @@ package org.hawkular.services.rest.test;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.jboss.logging.Logger;
 import org.testng.Assert;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.MediaType;
@@ -39,6 +43,47 @@ import com.squareup.okhttp.Response;
  * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
  */
 public class TestClient {
+
+    public static class Retry {
+        public static Retry none() {
+            return new Retry(0, 500);
+        }
+
+        public static Retry times(int times) {
+            return new Retry(times, 500);
+        }
+        private final int delayMs;
+        private final int times;
+        public Retry(int times, int delayMs) {
+            super();
+            this.times = times;
+            this.delayMs = delayMs;
+        }
+        public Retry delay(int delayMs) {
+            return new Retry(this.times, delayMs);
+        }
+
+        public <T> T retry(Supplier<T> supplier) {
+            Throwable lastException = null;
+            for (int i = 0; i < times; i++) {
+                try {
+                    Thread.sleep(delayMs);
+                    return supplier.get();
+                } catch (Throwable e) {
+                    lastException = e;
+                }
+            }
+            String msg = String.format(
+                    "No success getting [%s] after trying [%d] times with delay [%d] ms",
+                    supplier, times, delayMs);
+            if (lastException == null) {
+                throw new AssertionError(msg);
+            } else {
+                throw new AssertionError(msg, lastException);
+            }
+        }
+    }
+
     public class TestRequestBuilder {
         private final Request.Builder requestBuilder = new Request.Builder();
 
@@ -70,26 +115,6 @@ public class TestClient {
             Response response = client.newCall(request).execute();
             log.tracef("Got response [%s]", response);
             return new TestResponse(request, response);
-        }
-
-        public TestResponse get(int expectedCode, int attemptCount, int retryAfterMs) throws Exception {
-            Request request = requestBuilder.get().build();
-            Exception lastException = null;
-            for (int i = 0; i < attemptCount; i++) {
-                lastException = null;
-                try {
-                    log.tracef("About to execute request [%s]", request);
-                    Response response = client.newCall(request).execute();
-                    log.tracef("Got response [%s]", response);
-                    if (expectedCode == response.code()) {
-                        return new TestResponse(request, response);
-                    }
-                } catch (Exception e) {
-                    lastException = e;
-                }
-                Thread.sleep(retryAfterMs);
-            }
-            throw lastException;
         }
 
         public TestRequestBuilder header(String name, String value) {
@@ -127,8 +152,8 @@ public class TestClient {
     }
 
     public class TestResponse {
+        private String bodyString;
         private final Request request;
-
         private final Response response;
 
         public TestResponse(Request request, Response response) {
@@ -137,14 +162,31 @@ public class TestClient {
             this.response = response;
         }
 
-        public JsonNode asJson() throws JsonProcessingException, IOException {
-            String json = response.body().string();
-            return mapper.readTree(json);
+        public JsonNode asJson() {
+            String json = asString();
+            try {
+                return mapper.readTree(json);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        public <T> T asObject(Class<T> cls) throws IOException {
-            String json = response.body().string();
-            return mapper.readValue(json, cls);
+        public Stream<JsonNode> asJsonStream() {
+            JsonNode json = asJson();
+            Assert.assertTrue(json.isArray() || json.isObject(),
+                    String.format("Request [%s] should have returned a json array or object, while it returned [%s]",
+                            request, json.getNodeType()));
+            Spliterator<JsonNode> jsonSpliterator = Spliterators.spliteratorUnknownSize(json.elements(), 0);
+            return StreamSupport.stream(jsonSpliterator, false);
+        }
+
+        public <T> T asObject(Class<T> cls) {
+            String json = asString();
+            try {
+                return mapper.readValue(json, cls);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         public TestResponse assertCode(int code) {
@@ -152,15 +194,50 @@ public class TestClient {
             return this;
         }
 
-        public TestResponse assertJson(Consumer<JsonNode> assertion) throws JsonProcessingException, IOException {
+        public TestResponse assertWithRetries(Consumer<TestResponse> assertion, Retry retry) {
+            try {
+                assertion.accept(this);
+                return this;
+            } catch (Exception e) {
+                return retry.retry(() -> {
+                    log.tracef("About to execute request [%s]", this.request);
+                    Response newResponse;
+                    try {
+                        newResponse = TestClient.this.client.newCall(this.request).execute();
+                    } catch (Exception e1) {
+                        throw new RuntimeException(e1);
+                    }
+                    log.tracef("Got response [%s]", response);
+                    TestResponse testResponse = new TestResponse(request, newResponse);
+                    assertion.accept(testResponse);
+                    return testResponse;
+                });
+            }
+        }
+
+        public TestResponse assertJson(Consumer<JsonNode> assertion) {
             assertion.accept(asJson());
             return this;
         }
 
-        public <T> TestResponse assertObject(Class<T> cls, Consumer<T> assertion)
-                throws JsonProcessingException, IOException {
+        public <T> TestResponse assertObject(Class<T> cls, Consumer<T> assertion) {
             assertion.accept(asObject(cls));
             return this;
+        }
+
+        public String asString() {
+            if (bodyString == null) {
+                try {
+                    bodyString = response.body().string();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return bodyString;
+        }
+
+        public Request getRequest() {
+            return request;
         }
 
     }

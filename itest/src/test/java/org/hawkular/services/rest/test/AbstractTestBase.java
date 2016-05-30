@@ -49,6 +49,7 @@ public class AbstractTestBase extends Arquillian {
     protected static final ObjectMapper mapper;
     protected static final String testPasword = System.getProperty("hawkular.itest.rest.password");
     protected static final String testUser = System.getProperty("hawkular.itest.rest.user");
+    protected static final int hawkularPortOffset = Integer.parseInt(System.getProperty("hawkular.port.offset", "0"));
     private static final Random random = new Random();
 
     static {
@@ -59,8 +60,7 @@ public class AbstractTestBase extends Arquillian {
             h = "localhost";
         }
         host = h;
-        int portOffset = Integer.parseInt(System.getProperty("hawkular.port.offset", "0"));
-        int httpPort = portOffset + 8080;
+        int httpPort = hawkularPortOffset + 8080;
 
         baseUri = "http://" + host + ":" + httpPort;
 
