@@ -66,7 +66,7 @@
 
   <properties>
 
-    <version.org.hawkular.agent>0.17.6.Final-SRC-revision-d81e534953ed88c372620a622d5b8248274c265c</version.org.hawkular.agent>
+    <version.org.hawkular.agent>0.18.0.Final</version.org.hawkular.agent>
     <version.org.hawkular.alerts>1.1.0.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.7.2.Final</version.org.hawkular.commons>
     <version.org.hawkular.inventory>0.16.0.Final-SRC-revision-95d9738893fd0a536ca08919ff0a512dad2a90db</version.org.hawkular.inventory>
@@ -91,6 +91,26 @@
         <artifactId>hawkular-wildfly-agent-feature-pack</artifactId>
         <version>${version.org.hawkular.agent}</version>
         <type>zip</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.agent</groupId>
+        <artifactId>hawkular-wildfly-agent-download</artifactId>
+        <version>${version.org.hawkular.agent}</version>
+        <type>war</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.agent</groupId>
+        <artifactId>hawkular-wildfly-agent-wf-extension</artifactId>
+        <version>${version.org.hawkular.agent}</version>
+        <type>zip</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.agent</groupId>
+        <artifactId>hawkular-wildfly-agent-installer</artifactId>
+        <version>${version.org.hawkular.agent}</version>
       </dependency>
 
       <dependency>
