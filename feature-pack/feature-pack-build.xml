@@ -28,6 +28,8 @@
   </config>
 
   <copy-artifacts>
+    <copy-artifact artifact="org.hawkular.services:hawkular-rest-api" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-rest-api.war" />
+
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-download" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-wildfly-agent-download.war" />
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-wf-extension" to-location="standalone/configuration/hawkular-wildfly-agent-wf-extension.zip" />
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-installer" to-location="standalone/configuration/hawkular-wildfly-agent-installer.jar" />
