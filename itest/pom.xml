@@ -71,6 +71,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.hawkular.alerts</groupId>
       <artifactId>hawkular-alerts-api</artifactId>
       <version>${version.org.hawkular.alerts}</version>
@@ -148,12 +154,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId> <!-- the backend for jboss-logging -->
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 
