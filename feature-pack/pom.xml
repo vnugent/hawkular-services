@@ -32,6 +32,12 @@
   <name>Hawkular Services Feature Pack</name>
 
   <dependencies>
+    <dependency>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-rest-api</artifactId>
+      <type>war</type>
+      <version>0.0.1.Final-SNAPSHOT</version>
+    </dependency>
 
     <dependency>
       <groupId>org.hawkular.commons</groupId>
