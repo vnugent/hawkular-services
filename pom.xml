@@ -206,6 +206,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-undertow</artifactId>
+        <version>${version.org.wildfly}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly-javaee7</artifactId>
         <version>${version.org.wildfly.bom}</version>

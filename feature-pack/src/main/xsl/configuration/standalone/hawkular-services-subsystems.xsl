@@ -47,6 +47,13 @@
     </xsl:copy>
   </xsl:template>
 
+  <!-- Replace undertow.xml with hawkular-undertow.xml -->
+  <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']/*[local-name()='subsystem' and text()='undertow.xml']">
+    <xsl:copy>
+      <xsl:text>hawkular-services-undertow.xml</xsl:text>
+    </xsl:copy>
+  </xsl:template>
+
   <!-- copy everything else as-is -->
   <xsl:template match="node()|comment()|@*">
     <xsl:copy>

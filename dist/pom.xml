@@ -32,7 +32,6 @@
   <name>Hawkular Services Distribution</name>
 
   <dependencies>
-
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-services-feature-pack</artifactId>
@@ -61,6 +60,28 @@
       </plugin>
 
       <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -80,9 +101,17 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <excludes combine.children="append">
+            <exclude>src/main/resources/**/*.css</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
-
 
   <profiles>
     <profile>
