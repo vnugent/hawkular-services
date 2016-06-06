@@ -97,6 +97,11 @@
       <artifactId>wildfly-clustering-infinispan-extension</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-undertow</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -135,6 +140,13 @@
                 <artifactItem>
                   <groupId>org.wildfly</groupId>
                   <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+                  <includes>subsystem-templates/*.xml</includes>
+                  <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
+                </artifactItem>
+
+                <artifactItem>
+                  <groupId>org.wildfly</groupId>
+                  <artifactId>wildfly-undertow</artifactId>
                   <includes>subsystem-templates/*.xml</includes>
                   <outputDirectory>${project.build.directory}/feature-pack-resources</outputDirectory>
                 </artifactItem>
@@ -236,6 +248,21 @@
                     <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                       <pattern>^.*$</pattern>
                       <replacement>subsystem-templates/hawkular-services-infinispan.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-undertow.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/undertow.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-undertow.xml</replacement>
                     </fileMapper>
                   </fileMappers>
                 </transformationSet>
