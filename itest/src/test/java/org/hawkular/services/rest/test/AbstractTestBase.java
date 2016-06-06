@@ -51,6 +51,8 @@ public class AbstractTestBase extends Arquillian {
     protected static final String testUser = System.getProperty("hawkular.itest.rest.user");
     protected static final int hawkularPortOffset = Integer.parseInt(System.getProperty("hawkular.port.offset", "0"));
     private static final Random random = new Random();
+    protected static final int httpPort;
+    protected static final String httpScheme = "http";
 
     static {
         authHeader = Credentials.basic(testUser, testPasword);
@@ -60,9 +62,9 @@ public class AbstractTestBase extends Arquillian {
             h = "localhost";
         }
         host = h;
-        int httpPort = hawkularPortOffset + 8080;
+        httpPort = hawkularPortOffset + 8080;
 
-        baseUri = "http://" + host + ":" + httpPort;
+        baseUri = httpScheme + "://" + host + ":" + httpPort;
 
         client = new OkHttpClient();
         client.setConnectTimeout(60, TimeUnit.SECONDS);

@@ -30,6 +30,7 @@ import org.testng.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -68,6 +69,7 @@ public class TestClient {
             for (int i = 0; i < times; i++) {
                 try {
                     Thread.sleep(delayMs);
+                    log.tracef("Retry[%d]", i);
                     return supplier.get();
                 } catch (Throwable e) {
                     lastException = e;
@@ -145,6 +147,11 @@ public class TestClient {
             return this;
         }
 
+        public TestRequestBuilder url(HttpUrl url) {
+            requestBuilder.url(url);
+            return this;
+        }
+
         public TestRequestBuilder url(String url) {
             requestBuilder.url(url);
             return this;
@@ -198,7 +205,8 @@ public class TestClient {
             try {
                 assertion.accept(this);
                 return this;
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                log.tracef("Request [%s] failed, starting retries", this.request);
                 return retry.retry(() -> {
                     log.tracef("About to execute request [%s]", this.request);
                     Response newResponse;

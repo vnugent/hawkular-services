@@ -16,8 +16,6 @@
  */
 package org.hawkular.services.rest.test;
 
-import java.net.URLEncoder;
-
 import org.hawkular.cmdgw.ws.test.EchoCommandITest;
 import org.hawkular.services.rest.test.TestClient.Retry;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -26,6 +24,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.squareup.okhttp.HttpUrl;
 
 /**
  * Hawkular Agent integration tests.
@@ -53,17 +52,24 @@ public class AgentITest extends AbstractTestBase {
     public void agentCollectingMetrics() throws Throwable {
         final String wfHeapMetricId = "MI~R~[" + testFeedId + "/Local~~]~MT~WildFly Memory Metrics~Heap Used";
 
-        final String id = URLEncoder.encode(wfHeapMetricId, "UTF-8");
-        final String path = MetricsITest.metricsPath + "/gauges/data?buckets=1&metrics=" + id;
+        /* This low level HttpUrl building is needed because wfHeapMetricId contains slashes */
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme(httpScheme).host(host).port(httpPort)
+                .encodedPath(MetricsITest.metricsPath)
+                .addPathSegment("gauges")
+                .addPathSegment(wfHeapMetricId)
+                .addPathSegment("raw")
+                .build();
+
         testClient.newRequest()
                 .header("Hawkular-Tenant", testTenantId)
-                .path(path)
+                .url(url)
                 .get()
                 .assertWithRetries(testResponse -> {
                     testResponse
                             .assertCode(200)
                             .assertJson(foundDataPoints -> {
-                                log.infof("Request to [%s] returned datapoints [%s]", path, foundDataPoints);
+                                log.infof("Request to [%s] returned datapoints [%s]", url, foundDataPoints);
 
                                 Assert.assertTrue(foundDataPoints.isArray(), String.format(
                                         "[%s] should have returned a json array, while it returned [%s]",
@@ -72,7 +78,7 @@ public class AgentITest extends AbstractTestBase {
                                         "[%s] should have returned a json array with size >= 1, while it returned [%s]",
                                         testResponse.getRequest(), foundDataPoints));
                             });
-                }, Retry.times(200).delay(500));
+                }, Retry.times(50).delay(100));
     }
 
     /**
@@ -130,7 +136,7 @@ public class AgentITest extends AbstractTestBase {
 
                             });
 
-                }, Retry.times(200).delay(500));
+                }, Retry.times(50).delay(1000));
 
     }
 }
