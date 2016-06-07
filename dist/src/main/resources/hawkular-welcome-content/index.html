@@ -26,6 +26,53 @@
     <title>Welcome to Hawkular</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="StyleSheet" href="hawkular.css" type="text/css">
+    <script>
+
+       function statusRequest(serviceName) {
+         var xmlhttp = new XMLHttpRequest();
+         xmlhttp.onreadystatechange = function() {
+           if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+             var status = JSON.parse(xmlhttp.responseText);
+             setStatus(serviceName, status);
+           }
+           else if (xmlhttp.readyState == 4 && xmlhttp.status == 400) {
+             setUnavailableStatus(serviceName, "Internal error, can't determine the status of this service");
+           }
+           else if (xmlhttp.readyState == 4 && xmlhttp.status == 404) {
+             setUnavailableStatus(serviceName, "Unavailable or starting");
+           }
+           else if (xmlhttp.readyState == 4) {
+             setUnavailableStatus(serviceName, "Unknown, sorry");
+           }
+         };
+         xmlhttp.open("GET", "hawkular/" + serviceName + "/status", true);
+         xmlhttp.send();
+       }
+
+       function resetStatus(serviceName) {
+         document.getElementById(serviceName + "_version").innerHTML = "";
+         document.getElementById(serviceName + "_available").innerHTML = "";
+         document.getElementById(serviceName + "_unavailable").innerHTML = "";
+       }
+
+       function setStatus(serviceName, status) {
+         resetStatus(serviceName);
+         document.getElementById(serviceName + "_version").innerHTML = status["Implementation-Version"];
+         document.getElementById(serviceName + "_available").innerHTML = "Running";
+       }
+
+       function setUnavailableStatus(serviceName, error) {
+         resetStatus(serviceName);
+         document.getElementById(serviceName + "_unavailable").innerHTML = error;
+       }
+
+       window.setInterval(function () {
+         statusRequest("metrics");
+         statusRequest("alerts");
+         statusRequest("inventory");
+       }, 3000); // repeat forever, polling every 3 seconds
+
+    </script>
 </head>
 
 <body>
@@ -38,7 +85,11 @@
 
         <p><a href="http://hawkular.org">Hawkular Project</a> |
            <a href="https://issues.jboss.org/browse/HAWKULAR">Report an issue</a></p>
-
+        <div class="note">
+          <p>Hawkular Metrics: <span id="metrics_available" class="available">Please wait...</span> <span id="metrics_version"></span> <span id="metrics_unavailable" class="unavailable"></span></p>
+          <p>Hawkular Alerts: <span id="alerts_available" class="available">Please wait...</span> <span id="alerts_version"></span> <span id="alerts_unavailable" class="unavailable"></span></p>
+          <p>Hawkular Inventory: <span id="inventory_available" class="available">Please wait...</span> <span id="inventory_version"></span> <span id="inventory_unavailable" class="unavailable"/></span></p>
+        </div>
     </div>
 </div>
 </body>
