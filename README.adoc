@@ -1,0 +1,12 @@
+= Hawkular Services
+
+ifdef::env-github[]
+[link=https://travis-ci.org/hawkular/hawkular-services]
+image:https://travis-ci.org/hawkular/hawkular-services.svg?branch=master["Build Status", link="https://travis-ci.org/hawkular/hawkular-services"]
+endif::[]
+
+Hawkular Services is the main distribution for base level Hawkular components, such as Metrics, Alerts and Inventory.
+
+== License
+
+Hawkular is released under Apache License, Version 2.0 as described in the link:LICENSE[LICENSE] document
