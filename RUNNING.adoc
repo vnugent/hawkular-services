@@ -1,0 +1,55 @@
+To get started with Hawkular Services, you'll need to download the latest distribution (or build one), unzip, create
+an user and set the Agent to use this password.
+
+The following script shows how to accomplish all those steps. Please, don't use this script to setup a production
+instance, as it has several flaws (like catching error conditions, insecure password setting, ...).
+
+```
+#!/bin/bash
+
+export HAWKULAR_RELEASE="0.0.2.Final"
+export HAWKULAR_USERNAME="jdoe"
+export HAWKULAR_PASSWORD="password" ## on production systems, you'd want to better protect the password
+
+export HAWKULAR_BASEDIR="/opt/hawkular-services"
+export HAWKULAR_HOME="${HAWKULAR_BASEDIR}/hawkular-services-dist-${HAWKULAR_RELEASE}"
+export HAWKULAR_DIST="hawkular-services-dist-${HAWKULAR_RELEASE}.zip"
+export HAWKULAR_SHASUM="hawkular-services-dist-${HAWKULAR_RELEASE}.zip.sha1"
+
+if [ -d "${HAWKULAR_BASEDIR}" ] ; then
+  mkdir -p "${HAWKULAR_BASEDIR}"
+fi
+cd "${HAWKULAR_BASEDIR}"
+
+if [ -f "${HAWKULAR_DIST}" ] ; then
+  echo "Using existing distribution"
+else
+  wget "https://repository.jboss.org/nexus/content/groups/public/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_DIST}"
+fi
+
+if [ ! -f "${HAWKULAR_SHASUM}" ] ; then
+  wget "https://repository.jboss.org/nexus/content/groups/public/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_SHASUM}"
+fi
+
+export EXPECTED_SUM=`cat ${HAWKULAR_SHASUM}`
+export ACTUAL_SUM=`sha1sum ${HAWKULAR_DIST} | awk '{print $1}'`
+
+if [ "${EXPECTED_SUM}" != "${ACTUAL_SUM}" ] ; then
+  echo "Something is wrong. The checksum is not a match. Expected sum: ${EXPECTED_SUM}, actual sum is ${ACTUAL_SUM}"
+fi
+
+if [ -d "${HAWKULAR_HOME}" ] ; then
+  echo "Existing Hawkular found at ${HAWKULAR_HOME}. Moving it to ${HAWKULAR_HOME}.bkp"
+  mv "${HAWKULAR_HOME}" "${HAWKULAR_HOME}.bkp"
+fi
+unzip -q "hawkular-services-dist-${HAWKULAR_RELEASE}.zip"
+
+cd "${HAWKULAR_HOME}"
+echo "Hawkular Home is: ${HAWKULAR_HOME}"
+"${HAWKULAR_HOME}/bin/add-user.sh" \
+  -a \
+  -u "${HAWKULAR_USERNAME}" \
+  -p "${HAWKULAR_PASSWORD}" \
+  -g read-write,read-only
+"${HAWKULAR_HOME}/bin/standalone.sh" -Dhawkular.rest.user="${HAWKULAR_USERNAME}" -Dhawkular.rest.password="${HAWKULAR_PASSWORD} -Dhawkular.agent.enabled=true"
+```
