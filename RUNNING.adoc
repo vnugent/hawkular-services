@@ -1,6 +1,9 @@
 To get started with Hawkular Services, you'll need to download the latest distribution (or build one), unzip, create
 an user and set the Agent to use this password.
 
+You'll also need a Cassandra server up and running. Please, refer to Cassandra's official instructions on how to set
+it up.
+
 The following script shows how to accomplish all those steps. Please, don't use this script to setup a production
 instance, as it has several flaws (like catching error conditions, insecure password setting, ...).
 

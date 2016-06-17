@@ -109,6 +109,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-commons-embedded-cassandra-war</artifactId>
+      <type>war</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.hawkular.inventory</groupId>
       <artifactId>hawkular-inventory-api</artifactId>
       <scope>test</scope>
@@ -261,6 +268,23 @@
                     </artifactItem>
 
                   </artifactItems>
+                </configuration>
+              </execution>
+              <execution>
+                <id>deploy-embedded-cassandra</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.hawkular.commons</groupId>
+                      <artifactId>hawkular-commons-embedded-cassandra-war</artifactId>
+                      <type>war</type>
+                    </artifactItem>
+                  </artifactItems>
+                  <outputDirectory>${project.build.directory}/${hawkular.services.dist.finalName}/modules/system/layers/hawkular/org/hawkular/nest/main/deployments/</outputDirectory>
                 </configuration>
               </execution>
             </executions>
@@ -423,6 +447,7 @@
                     -Dhawkular.log.nest=${hawkular.log.nest}
                     -Dhawkular.log.datastax.driver=${hawkular.log.datastax.driver}
                     -Dhawkular.log.cassandra=${hawkular.log.cassandra}
+                    -Dhawkular.backend=embedded_cassandra
                     ${debug.wildfly.argLine}
                 </jboss.options>
                 <jboss.server.config.file.name>standalone-with-reduced-agent.xml</jboss.server.config.file.name>
