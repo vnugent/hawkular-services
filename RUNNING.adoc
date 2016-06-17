@@ -16,7 +16,7 @@ export HAWKULAR_HOME="${HAWKULAR_BASEDIR}/hawkular-services-dist-${HAWKULAR_RELE
 export HAWKULAR_DIST="hawkular-services-dist-${HAWKULAR_RELEASE}.zip"
 export HAWKULAR_SHASUM="hawkular-services-dist-${HAWKULAR_RELEASE}.zip.sha1"
 
-if [ -d "${HAWKULAR_BASEDIR}" ] ; then
+if [ ! -d "${HAWKULAR_BASEDIR}" ] ; then
   mkdir -p "${HAWKULAR_BASEDIR}"
 fi
 cd "${HAWKULAR_BASEDIR}"
@@ -24,7 +24,7 @@ cd "${HAWKULAR_BASEDIR}"
 if [ -f "${HAWKULAR_DIST}" ] ; then
   echo "Using existing distribution"
 else
-  wget "https://repository.jboss.org/nexus/content/groups/public/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_DIST}"
+  wget "http://central.maven.org/maven2/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_DIST}"
 fi
 
 if [ ! -f "${HAWKULAR_SHASUM}" ] ; then
