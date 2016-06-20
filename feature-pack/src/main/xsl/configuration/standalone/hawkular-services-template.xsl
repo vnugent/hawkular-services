@@ -27,27 +27,29 @@
   <xsl:param name="hawkular.rest.password" select="''"/>
 
   <!-- Add the default user and password if they were passed in through the parameters -->
-  <xsl:template match="/*[local-name()='server']/*[local-name()='system-properties']/*[local-name()='property'][last()]">
+  <xsl:template match="/*[local-name()='server']/*[local-name()='management']">
     <xsl:message>hawkular.rest.user = <xsl:value-of select="$hawkular.rest.user" /></xsl:message>
+    <system-properties>
+      <xsl:element name="property" namespace="{namespace-uri()}">
+        <xsl:attribute name="name">hawkular.agent.enabled</xsl:attribute>
+        <xsl:attribute name="value">${hawkular.agent.enabled:<xsl:value-of select="$hawkular.agent.enabled" />}</xsl:attribute>
+      </xsl:element>
+      <xsl:if test="$hawkular.rest.user != ''">
+        <xsl:element name="property" namespace="{namespace-uri()}">
+          <xsl:attribute name="name">hawkular.rest.user</xsl:attribute>
+          <xsl:attribute name="value">${hawkular.rest.user:<xsl:value-of select="$hawkular.rest.user" />}</xsl:attribute>
+        </xsl:element>
+      </xsl:if>
+      <xsl:if test="$hawkular.rest.password != ''">
+        <xsl:element name="property" namespace="{namespace-uri()}">
+          <xsl:attribute name="name">hawkular.rest.password</xsl:attribute>
+          <xsl:attribute name="value">${hawkular.rest.password:<xsl:value-of select="$hawkular.rest.password" />}</xsl:attribute>
+        </xsl:element>
+      </xsl:if>
+    </system-properties>
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*"/>
     </xsl:copy>
-    <xsl:element name="property" namespace="{namespace-uri()}">
-      <xsl:attribute name="name">hawkular.agent.enabled</xsl:attribute>
-      <xsl:attribute name="value">${hawkular.agent.enabled:<xsl:value-of select="$hawkular.agent.enabled" />}</xsl:attribute>
-    </xsl:element>
-    <xsl:if test="$hawkular.rest.user != ''">
-      <xsl:element name="property" namespace="{namespace-uri()}">
-        <xsl:attribute name="name">hawkular.rest.user</xsl:attribute>
-        <xsl:attribute name="value">${hawkular.rest.user:<xsl:value-of select="$hawkular.rest.user" />}</xsl:attribute>
-      </xsl:element>
-    </xsl:if>
-    <xsl:if test="$hawkular.rest.password != ''">
-      <xsl:element name="property" namespace="{namespace-uri()}">
-        <xsl:attribute name="name">hawkular.rest.password</xsl:attribute>
-        <xsl:attribute name="value">${hawkular.rest.password:<xsl:value-of select="$hawkular.rest.password" />}</xsl:attribute>
-      </xsl:element>
-    </xsl:if>
   </xsl:template>
 
   <!-- copy everything else as-is -->

@@ -354,7 +354,7 @@
                         </parameter>
                       </parameters>
                       <includes>
-                        <include>configuration/standalone/hawkular-nest-template.xml</include>
+                        <include>configuration/standalone/template.xml</include>
                       </includes>
                       <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
                       <fileMappers>
