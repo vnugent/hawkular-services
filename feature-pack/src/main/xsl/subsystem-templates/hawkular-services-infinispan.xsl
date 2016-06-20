@@ -29,6 +29,9 @@
         <local-cache name="triggers"/>
         <local-cache name="data"/>
       </cache-container>
+      <cache-container name="hawkular-services" default-cache="backfill" statistics-enabled="true">
+        <local-cache name="backfill"/>
+      </cache-container>
     </xsl:copy>
   </xsl:template>
 

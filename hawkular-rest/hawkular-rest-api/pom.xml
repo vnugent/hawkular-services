@@ -35,10 +35,15 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hawkular.services</groupId>
-      <artifactId>hawkular-rx</artifactId>
-      <version>0.0.3.Final-SNAPSHOT</version>
+      <groupId>org.hawkular.inventory</groupId>
+      <artifactId>hawkular-inventory-json-helper</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.inventory</groupId>
+      <artifactId>hawkular-inventory-security-spi</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-listener</artifactId>
@@ -46,22 +51,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.hawkular.inventory</groupId>
-      <artifactId>hawkular-inventory-bus-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.inventory</groupId>
-      <artifactId>hawkular-inventory-json-helper</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.inventory</groupId>
-      <artifactId>hawkular-inventory-security-permissive</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hawkular.inventory</groupId>
-      <artifactId>hawkular-inventory-security-spi</artifactId>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-rx</artifactId>
+      <version>0.0.3.Final-SNAPSHOT</version>
     </dependency>
 
     <dependency>

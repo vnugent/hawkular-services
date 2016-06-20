@@ -32,8 +32,11 @@
 
   <name>Hawkular REST: Listener</name>
 
-  <dependencies>
+  <properties>
+    <version.io.reactivex.rxjava>1.0.13</version.io.reactivex.rxjava>
+  </properties>
 
+  <dependencies>
     <!-- Hawkular Command Gateway dependencies -->
     <dependency>
       <groupId>org.hawkular.commons</groupId>
@@ -44,17 +47,42 @@
     <dependency>
       <groupId>org.hawkular.alerts</groupId>
       <artifactId>hawkular-alerts-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Hawkular Inventory dependencies -->
     <dependency>
       <groupId>org.hawkular.inventory</groupId>
       <artifactId>hawkular-inventory-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.inventory</groupId>
       <artifactId>hawkular-inventory-bus-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Hawkular Metrics dependencies -->
+    <dependency>
+      <groupId>org.hawkular.metrics</groupId>
+      <artifactId>hawkular-metrics-api-util</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.metrics</groupId>
+      <artifactId>hawkular-metrics-bus</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.metrics</groupId>
+      <artifactId>hawkular-metrics-core-service</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.reactivex</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>${version.io.reactivex.rxjava}</version>
     </dependency>
 
     <!-- Hawkular Nest dependencies -->
@@ -100,6 +128,12 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jackson2-provider</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-core</artifactId>
       <scope>provided</scope>
     </dependency>
 

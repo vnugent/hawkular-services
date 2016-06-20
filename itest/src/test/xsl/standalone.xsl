@@ -53,6 +53,14 @@
     </xsl:copy>
   </xsl:template>
 
+  <!-- ping more frequently -->
+  <xsl:template match="//*[local-name()='profile']/*[local-name()='subsystem' and @auto-discovery-scan-period-secs]">
+    <xsl:copy>
+      <xsl:attribute name="ping-period-secs">5</xsl:attribute>
+      <xsl:apply-templates select="node()|comment()|@*" />
+    </xsl:copy>
+  </xsl:template>
+
   <!-- copy everything else as-is -->
   <xsl:template match="node()|comment()|@*">
     <xsl:copy>

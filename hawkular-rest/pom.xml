@@ -69,11 +69,6 @@
         <artifactId>commons-lang3</artifactId>
         <version>${version.org.apache.commons.lang3}</version>
       </dependency>
-      <dependency>
-        <groupId>org.hawkular.inventory</groupId>
-        <artifactId>hawkular-inventory-json-helper</artifactId>
-        <version>${version.org.hawkular.inventory}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.hawkular.inventory</groupId>

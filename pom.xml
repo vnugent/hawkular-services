@@ -169,15 +169,27 @@
 
       <dependency>
         <groupId>org.hawkular.inventory</groupId>
+        <artifactId>hawkular-inventory-dist</artifactId>
+        <version>${version.org.hawkular.inventory}</version>
+        <type>war</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.inventory</groupId>
         <artifactId>hawkular-inventory-json-helper</artifactId>
         <version>${version.org.hawkular.inventory}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.hawkular.inventory</groupId>
-        <artifactId>hawkular-inventory-dist</artifactId>
-        <version>${version.org.hawkular.inventory}</version>
-        <type>war</type>
+        <groupId>org.hawkular.metrics</groupId>
+        <artifactId>hawkular-metrics-api-util</artifactId>
+        <version>${version.org.hawkular.metrics}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.metrics</groupId>
+        <artifactId>hawkular-metrics-bus</artifactId>
+        <version>${version.org.hawkular.metrics}</version>
       </dependency>
 
       <dependency>
@@ -185,6 +197,12 @@
         <artifactId>hawkular-metrics-component</artifactId>
         <version>${version.org.hawkular.metrics}</version>
         <type>war</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hawkular.metrics</groupId>
+        <artifactId>hawkular-metrics-core-service</artifactId>
+        <version>${version.org.hawkular.metrics}</version>
       </dependency>
 
       <dependency>

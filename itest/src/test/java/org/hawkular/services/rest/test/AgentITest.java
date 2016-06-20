@@ -82,6 +82,48 @@ public class AgentITest extends AbstractTestBase {
     }
 
     /**
+     * Checks that the agent's ping [availability] metric is being sent and stored into Hawkular Metrics.
+     * <p>
+     * A note about {@link Test#dependsOnGroups()}: we actually depend only on {@link MetricsITest#GROUP} here but we
+     * want these tests to run at the very end of the suite so that it takes less to wait for the data points to appear
+     * in Metrics.
+     *
+     * @throws Throwable
+     */
+    @Test(dependsOnGroups = { EchoCommandITest.GROUP, InventoryITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
+    @RunAsClient
+    public void agentSendingPings() throws Throwable {
+        final String pingMetricId = "hawkular-feed-availability-" + testFeedId;
+
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme(httpScheme).host(host).port(httpPort)
+                .encodedPath(MetricsITest.metricsPath)
+                .addPathSegment("availability")
+                .addPathSegment(pingMetricId)
+                .addPathSegment("raw")
+                .build();
+
+        testClient.newRequest()
+                .header("Hawkular-Tenant", testTenantId)
+                .url(url)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(foundDataPoints -> {
+                        log.infof("Request to [%s] returned datapoints [%s]", url, foundDataPoints);
+
+                        Assert.assertTrue(foundDataPoints.isArray(), String.format(
+                                "[%s] should have returned a json array, while it returned [%s]",
+                                testResponse.getRequest(), foundDataPoints));
+                        Assert.assertTrue(foundDataPoints.size() >= 1, String.format(
+                                "[%s] should have returned a json array with size >= 1, while it returned [%s]",
+                                testResponse.getRequest(), foundDataPoints));
+                    });
+                } , Retry.times(50).delay(100));
+    }
+
+    /**
      * Checks that at least he local WildFly and operating system were inserted to the Inventory by Hawkular Agent.
      * <p>
      * A note about {@link Test#dependsOnGroups()}: we actually depend only on {@link InventoryITest#GROUP} here but we
