@@ -25,7 +25,7 @@
   <xsl:template match="//*[local-name()='storage-adapter']">
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
-      <xsl:attribute name="feedId">${hawkular.rest.feedId}</xsl:attribute>
+      <xsl:attribute name="feed-id">${hawkular.rest.feedId}</xsl:attribute>
     </xsl:copy>
   </xsl:template>
 
@@ -33,7 +33,7 @@
   <xsl:template match="//*[local-name()='managed-servers']/*[local-name()='local-dmr']">
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
-      <xsl:attribute name="resourceTypeSets">Standalone Environment</xsl:attribute>
+      <xsl:attribute name="resource-type-sets">Standalone Environment</xsl:attribute>
     </xsl:copy>
   </xsl:template>
 
@@ -41,7 +41,7 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
       <xsl:attribute name="interval">5</xsl:attribute>
-      <xsl:attribute name="timeUnits">seconds</xsl:attribute>
+      <xsl:attribute name="time-units">seconds</xsl:attribute>
     </xsl:copy>
   </xsl:template>
 
@@ -49,7 +49,7 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|comment()|@*" />
       <xsl:attribute name="interval">5</xsl:attribute>
-      <xsl:attribute name="timeUnits">seconds</xsl:attribute>
+      <xsl:attribute name="time-units">seconds</xsl:attribute>
     </xsl:copy>
   </xsl:template>
 
