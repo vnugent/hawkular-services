@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-api-parent</artifactId>
-    <version>0.0.3.Final-SNAPSHOT</version>
+    <version>0.0.3.Final</version>
   </parent>
 
   <artifactId>hawkular-rx</artifactId>
-  <version>0.0.3.Final-SNAPSHOT</version>
+  <version>0.0.3.Final</version>
 
   <name>Hawkular REST: RX extensions layer</name>
   <description>Hawkular RX extensions layer</description>
