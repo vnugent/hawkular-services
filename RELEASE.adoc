@@ -1,0 +1,15 @@
+To release Hawkular Services, you'll need a JBoss.org Account with the appropriate permissions to the target repository.
+
+Releasing Hawkular Services is done the same way as other Maven projects:
+
+```
+$ mvn release:prepare release:perform
+```
+
+Another option is to use Torii, a Red Hat internal machine:
+https://jenkins.torii.gva.redhat.com/job/hawkular-services/
+
+Once logged in, the option "Perform Maven Release" is available. Just click on it and "Schedule Maven Release Build".
+This will basically do a `mvn release:prepare release:perform`.
+
+When the release finishes, either locally or at the server, the Nexus repository has to be closed and released.
