@@ -18,7 +18,7 @@
 body {
         color: #5B5B5B;
         font-family: "Lucida Sans Unicode", "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
-        margin-top: 100px;
+        margin-top: 40px;
         text-align: center;
 }
 .wrapper {
@@ -43,13 +43,18 @@ a:hover {
     margin: 0;
     padding: 0;
 }
-.logo{
+.logo {
     margin-bottom: 10px;
+    border: 0;
 }
-.note {
+.note, .note table {
         font-size: 8pt;
         color: #aaaaaa;
         text-align: left;
+        margin-top: 40px;
+}
+.note td {
+        padding-left: 10px;
 }
 .unavailable {
         color: red;
