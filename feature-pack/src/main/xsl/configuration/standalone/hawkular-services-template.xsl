@@ -25,6 +25,7 @@
   <xsl:param name="hawkular.agent.enabled" select="'true'"/>
   <xsl:param name="hawkular.rest.user" select="''"/>
   <xsl:param name="hawkular.rest.password" select="''"/>
+  <xsl:param name="hawkular.embeddedc" select="'false'"/>
 
   <!-- Add the default user and password if they were passed in through the parameters -->
   <xsl:template match="/*[local-name()='server']/*[local-name()='management']">
@@ -44,6 +45,12 @@
         <xsl:element name="property" namespace="{namespace-uri()}">
           <xsl:attribute name="name">hawkular.rest.password</xsl:attribute>
           <xsl:attribute name="value">${hawkular.rest.password:<xsl:value-of select="$hawkular.rest.password" />}</xsl:attribute>
+        </xsl:element>
+      </xsl:if>
+      <xsl:if test="$hawkular.embeddedc = 'true'">
+        <xsl:element name="property" namespace="{namespace-uri()}">
+          <xsl:attribute name="name">hawkular.backend</xsl:attribute>
+          <xsl:attribute name="value">embedded_cassandra</xsl:attribute>
         </xsl:element>
       </xsl:if>
     </system-properties>

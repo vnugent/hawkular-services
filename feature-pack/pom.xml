@@ -31,6 +31,11 @@
 
   <name>Hawkular Services Feature Pack</name>
 
+  <properties>
+    <hawkular.embeddedc>false</hawkular.embeddedc>
+    <feature-pack-build-xml>feature-pack-build.xml</feature-pack-build-xml>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.hawkular.services</groupId>
@@ -194,6 +199,10 @@
                       <name>hawkular.agent.enabled</name>
                       <value>${hawkular.agent.enabled}</value>
                     </parameter>
+                    <parameter>
+                      <name>hawkular.embeddedc</name>
+                      <value>${hawkular.embeddedc}</value>
+                    </parameter>
                   </parameters>
                   <includes>
                     <include>configuration/standalone/template.xml</include>
@@ -284,6 +293,7 @@
               <goal>build</goal>
             </goals>
             <configuration>
+              <config-file>${feature-pack-build-xml}</config-file>
               <resources-dir>target/feature-pack-resources</resources-dir>
             </configuration>
           </execution>
@@ -343,6 +353,10 @@
                           <name>hawkular.agent.enabled</name>
                           <value>${hawkular.agent.enabled}</value>
                         </parameter>
+                        <parameter>
+                          <name>hawkular.embeddedc</name>
+                          <value>${hawkular.embeddedc}</value>
+                        </parameter>
                         <!-- with the default user in the dev profile -->
                         <parameter>
                           <name>hawkular.rest.user</name>
@@ -373,6 +387,48 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <!-- A profile to build a distro that includes embedded cassandra -->
+      <id>embeddedc</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.hawkular.commons</groupId>
+          <artifactId>hawkular-commons-embedded-cassandra-war</artifactId>
+          <type>war</type>
+        </dependency>
+      </dependencies>
+      <properties>
+        <hawkular.embeddedc>true</hawkular.embeddedc>
+        <feature-pack-build-xml>target/feature-pack-config/feature-pack-build.xml</feature-pack-build-xml>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-feature-pack-build-xml-with-embedded-cassandra</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <tasks>
+                    <copy file="${basedir}/feature-pack-build.xml" tofile="${feature-pack-build-xml}" />
+                    <replaceregexp file="${feature-pack-build-xml}"
+                                   match="&lt;/copy-artifacts>"
+                                   replace="  &lt;copy-artifact artifact=&quot;org.hawkular.commons:hawkular-commons-embedded-cassandra-war&quot; to-location=&quot;modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-commons-embedded-cassandra-war.war&quot; />&#10;  &lt;/copy-artifacts>" />
+                  </tasks>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
 </project>
