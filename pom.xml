@@ -67,7 +67,7 @@
 
   <properties>
 
-    <version.org.hawkular.agent>0.19.2.Final</version.org.hawkular.agent>
+    <version.org.hawkular.agent>0.20.0.Final</version.org.hawkular.agent>
     <version.org.hawkular.alerts>1.1.1.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.7.4.Final</version.org.hawkular.commons>
     <version.org.hawkular.inventory>0.17.2.Final</version.org.hawkular.inventory>
