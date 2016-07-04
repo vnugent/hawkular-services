@@ -38,13 +38,13 @@ public class InventoryITest extends AbstractTestBase {
     private static final String testResourceTypeId = "testResourceType";
     private static final String testResourceId = "testResource";
     private static final String testEnvironmentId = "testEnvironment";
-    public static final String inventoryPath = "/hawkular/inventory";
+    public static final String inventoryPath = "/hawkular/inventory/deprecated";
 
     @Test(groups = { GROUP })
     @RunAsClient
     public void inventoryUp() throws Throwable {
 
-        final String path = inventoryPath + "/status";
+        final String path = "/hawkular/inventory/status";
         testClient.newRequest()
                 .path(path).get()
                 .assertWithRetries(testResponse -> {
