@@ -28,7 +28,7 @@
 
   <groupId>org.hawkular.services</groupId>
   <artifactId>hawkular-services</artifactId>
-  <version>0.0.5.Final-SNAPSHOT</version>
+  <version>0.0.5.Final</version>
   <packaging>pom</packaging>
 
   <name>Hawkular Services</name>
@@ -58,7 +58,7 @@
     <connection>scm:git:git@github.com:hawkular/hawkular-services.git</connection>
     <developerConnection>scm:git:git@github.com:hawkular/hawkular-services.git</developerConnection>
     <url>https://github.com/hawkular-services</url>
-    <tag>HEAD</tag>
+    <tag>0.0.5.Final</tag>
   </scm>
   <issueManagement>
     <system>jira</system>
@@ -208,14 +208,14 @@
       <dependency>
         <groupId>org.hawkular.services</groupId>
         <artifactId>hawkular-services-feature-pack</artifactId>
-        <version>0.0.5.Final-SNAPSHOT</version>
+        <version>0.0.5.Final</version>
         <type>zip</type>
       </dependency>
 
       <dependency>
         <groupId>org.hawkular.services</groupId>
         <artifactId>hawkular-services-dist</artifactId>
-        <version>0.0.5.Final-SNAPSHOT</version>
+        <version>0.0.5.Final</version>
         <type>zip</type>
       </dependency>
 
