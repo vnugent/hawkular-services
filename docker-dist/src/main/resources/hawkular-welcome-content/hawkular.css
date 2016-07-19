@@ -1,0 +1,60 @@
+/**
+ * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+body {
+        color: #5B5B5B;
+        font-family: "Lucida Sans Unicode", "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
+        margin-top: 100px;
+        text-align: center;
+}
+.wrapper {
+        margin-left: auto;
+        margin-right: auto;
+        width: 50em;
+        text-align: center;
+}
+a {
+        text-decoration: none;
+        color: #5e8a9a;
+}
+h1 {
+        padding-top: 20px;
+        color: #7b1e1e;
+}
+a:hover {
+        text-decoration: underline;
+        color: #8ec6d9;
+}
+.content {
+    margin: 0;
+    padding: 0;
+}
+.logo{
+    margin-bottom: 10px;
+}
+.note {
+        font-size: 8pt;
+        color: #aaaaaa;
+        text-align: left;
+}
+.unavailable {
+        color: red;
+}
+.available {
+        color: green;
+}
+

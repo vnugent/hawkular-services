@@ -53,6 +53,7 @@
     <module>feature-pack</module>
     <module>itest</module>
     <module>hawkular-status</module>
+    <module>docker-dist</module>
   </modules>
 
   <scm>
