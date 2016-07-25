@@ -38,7 +38,8 @@ public class InventoryITest extends AbstractTestBase {
     private static final String testResourceTypeId = "testResourceType";
     private static final String testResourceId = "testResource";
     private static final String testEnvironmentId = "testEnvironment";
-    public static final String inventoryPath = "/hawkular/inventory/deprecated";
+    public static final String inventoryPath = "/hawkular/inventory";
+    public static final String traversalPath = "/hawkular/inventory/traversal";
 
     @Test(groups = { GROUP })
     @RunAsClient
@@ -51,13 +52,13 @@ public class InventoryITest extends AbstractTestBase {
                     testResponse
                             .assertCode(200)
                             .assertJson(inventoryStatus -> {
-                                log.tracef("Got inventory status [%s]", inventoryStatus);
-                                Assert.assertTrue(inventoryStatus.get("Initialized").asBoolean(),
-                                        String.format(
-                                                "[%s] should have returned a state with Initialized == true, while it retruened [%s]",
-                                                testResponse.getRequest(), inventoryStatus));
-                            });
-                }, Retry.times(50).delay(250));
+                        log.tracef("Got inventory status [%s]", inventoryStatus);
+                        Assert.assertTrue(inventoryStatus.get("Initialized").asBoolean(),
+                                String.format(
+                                        "[%s] should have returned a state with Initialized == true, while it retruened [%s]",
+                                        testResponse.getRequest(), inventoryStatus));
+                    });
+                } , Retry.times(50).delay(250));
 
     }
 
@@ -65,13 +66,14 @@ public class InventoryITest extends AbstractTestBase {
     @RunAsClient
     public void postGetDelete() throws Throwable {
         /* ensure our env not there already */
-        final String environmentsPath = inventoryPath + "/environments";
-        final String environmentPath = environmentsPath + "/" + testEnvironmentId;
-        testClient.newRequest().path(environmentPath).get().assertCode(404);
+        final String environmentPath = inventoryPath + "/entity/e;" + testEnvironmentId;
+        testClient.newRequest().path(environmentPath).get()
+                .assertCode(404);
 
         /* create our test environment */
+        String postPath = inventoryPath + "/entity/environment";
         final Object env = Environment.Blueprint.builder().withId(testEnvironmentId).build();
-        testClient.newRequest().path(environmentsPath).postObject(env).assertCode(201);
+        testClient.newRequest().path(postPath).postObject(env).assertCode(201);
 
         /* check that our env is there */
         testClient.newRequest()
@@ -81,13 +83,14 @@ public class InventoryITest extends AbstractTestBase {
                         String.format("GET [%s] returned an unexpected object", environmentPath)));
 
         /* ensure our test resource type not there already */
-        final String resourceTypesPath = inventoryPath + "/resourceTypes";
-        final String resourceTypePath = resourceTypesPath + "/" + testResourceTypeId;
-        testClient.newRequest().path(resourceTypePath).get().assertCode(404);
+        final String resourceTypePath = inventoryPath + "/entity/rt;" + testResourceTypeId;
+        testClient.newRequest().path(resourceTypePath).get()
+                .assertCode(404);
 
         /* create our test resource type */
+        postPath = inventoryPath + "/entity/resourceType";
         final Object resType = ResourceType.Blueprint.builder().withId(testResourceTypeId).build();
-        testClient.newRequest().path(resourceTypesPath).postObject(resType).assertCode(201);
+        testClient.newRequest().path(postPath).postObject(resType).assertCode(201);
 
         /* check that our test resource type is there */
         testClient.newRequest()
@@ -97,16 +100,18 @@ public class InventoryITest extends AbstractTestBase {
                         String.format("GET [%s] returned an unexpected object", resourceTypePath)));
 
         /* ensure no resources there already */
-        final String resourcesPath = inventoryPath + "/" + testEnvironmentId + "/resources";
-        final String resourcePath = resourcesPath + "/" + testResourceId;
-        testClient.newRequest().path(resourcePath).get().assertCode(404);
+        final String resourcesPath = traversalPath + "/type=e/type=r";
+        final String resourcePath = inventoryPath + "/entity/e;" + testEnvironmentId + "/r;" + testResourceId;
+        testClient.newRequest().path(resourcePath).get()
+                .assertCode(404);
 
         /* create our test resource */
+        postPath = inventoryPath + "/entity/e;" + testEnvironmentId + "/resource";
         Object resource = Resource.Blueprint.builder()//
                 .withId(testResourceId)//
                 .withResourceTypePath("../" + testResourceTypeId)//
                 .build();
-        testClient.newRequest().path(resourcesPath).postObject(resource).assertCode(201);
+        testClient.newRequest().path(postPath).postObject(resource).assertCode(201);
 
         /* check that our test resource is there */
         testClient.newRequest()
@@ -137,6 +142,5 @@ public class InventoryITest extends AbstractTestBase {
 
         testClient.newRequest().path(environmentPath).delete().assertCode(204);
         testClient.newRequest().path(environmentPath).get().assertCode(404);
-
     }
 }

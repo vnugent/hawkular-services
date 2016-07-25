@@ -20,10 +20,11 @@
 <jboss-deployment-structure>
   <deployment>
     <dependencies>
-      <module name="org.hawkular.commons.cassandra-driver"/>
       <module name="com.fasterxml.jackson.core.jackson-core"/>
       <module name="com.google.guava"/>
       <module name="org.hawkular.bus"/>
+      <module name="org.hawkular.commons.cassandra-driver"/>
+      <module name="org.hawkular.commons.hawkular-inventory-paths"/>
       <module name="deployment.hawkular-metrics-component.war" />
       <module name="deployment.hawkular-alerts-rest.war" />
       <module name="deployment.hawkular-inventory-dist.war" />

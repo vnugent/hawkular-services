@@ -135,7 +135,8 @@ public class AgentITest extends AbstractTestBase {
     @Test(dependsOnGroups = { InventoryITest.GROUP, EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
     @RunAsClient
     public void agentDiscoverySuccess() throws Throwable {
-        final String resourcesPath = InventoryITest.inventoryPath + "/feeds/" + testFeedId + "/resources";
+        // TODO: update to traversal api
+        final String resourcesPath = InventoryITest.inventoryPath + "/deprecated/feeds/" + testFeedId + "/resources";
         final String wfServerCanonicalPath = "/t;itest-rest-tenant/f;itest-feed/r;Local~~";
         final String osCanonicalPath =
                 "/t;itest-rest-tenant/f;itest-feed/r;platform~%2FOPERATING_SYSTEM%3Ditest-feed_OperatingSystem";

@@ -37,10 +37,16 @@
   </properties>
 
   <dependencies>
-    <!-- Hawkular Command Gateway dependencies -->
+    <!-- Hawkular Commons dependencies -->
     <dependency>
       <groupId>org.hawkular.commons</groupId>
       <artifactId>hawkular-command-gateway-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-inventory-paths</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Hawkular Alerts dependencies -->
