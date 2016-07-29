@@ -70,7 +70,7 @@
     <version.org.hawkular.agent>0.20.0.Final</version.org.hawkular.agent>
     <version.org.hawkular.alerts>1.1.1.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.7.5.Final-SRC-revision-ff1690b60edbe53141dcc98d7374e13c8ff08eae</version.org.hawkular.commons>
-    <version.org.hawkular.inventory>0.17.2.Final</version.org.hawkular.inventory>
+    <version.org.hawkular.inventory>0.17.3.Final</version.org.hawkular.inventory>
     <version.org.hawkular.metrics>0.17.0.Final</version.org.hawkular.metrics>
 
     <version.org.jboss.arquillian>1.1.11.Final</version.org.jboss.arquillian>
