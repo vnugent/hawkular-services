@@ -27,6 +27,7 @@ import javax.jms.MessageListener;
 
 import org.hawkular.bus.common.consumer.BasicMessageListener;
 import org.hawkular.listener.cache.BackfillCache;
+import org.hawkular.listener.cache.BackfillCacheManager;
 import org.hawkular.metrics.component.publish.AvailDataMessage;
 import org.hawkular.metrics.component.publish.AvailDataMessage.AvailData;
 import org.hawkular.metrics.component.publish.AvailDataMessage.SingleAvail;
@@ -50,7 +51,6 @@ import org.jboss.logging.Logger;
 public class FeedAvailabilityDataListener extends BasicMessageListener<AvailDataMessage> {
     private final Logger log = Logger.getLogger(FeedAvailabilityDataListener.class);
 
-    public static final String FEED_PREFIX = "hawkular-feed-availability-";
     private static final String UP = "UP";
 
     @EJB
@@ -67,8 +67,8 @@ public class FeedAvailabilityDataListener extends BasicMessageListener<AvailData
         List<SingleAvail> data = availData.getData();
         for (SingleAvail a : data) {
             String metricId = a.getId();
-            // ignore non-ping avail
-            if (metricId.startsWith(FEED_PREFIX) && UP.equals(a.getAvail())) {
+            // ignore non-ping or non-up avail
+            if (metricId.startsWith(BackfillCacheManager.FEED_PREFIX) && UP.equals(a.getAvail())) {
                 backfillCacheManager.updateFeedAvailability(a.getTenantId(), metricId);
             }
         }

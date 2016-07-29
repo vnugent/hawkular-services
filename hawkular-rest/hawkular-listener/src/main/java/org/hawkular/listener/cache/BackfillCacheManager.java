@@ -42,8 +42,8 @@ import javax.ejb.TransactionAttributeType;
 import org.hawkular.inventory.api.Inventory;
 import org.hawkular.inventory.api.Metrics;
 import org.hawkular.inventory.api.filters.With;
+import org.hawkular.inventory.api.model.Feed;
 import org.hawkular.inventory.api.model.MetricDataType;
-import org.hawkular.listener.bus.FeedAvailabilityDataListener;
 import org.hawkular.metrics.core.service.Functions;
 import org.hawkular.metrics.core.service.MetricsService;
 import org.hawkular.metrics.model.AvailabilityType;
@@ -126,6 +126,11 @@ import rx.Subscriber;
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
 public class BackfillCacheManager implements BackfillCache {
 
+    private static final String DEFAULT_JOB_PERIOD_SECS = "15";
+    private static final String DEFAULT_JOB_THREADS = "10";
+    private static final String DEFAULT_PING_PERIOD_FACTOR = "2.5";
+    private static final String DEFAULT_PING_PERIOD_MIN_SECS = "125";
+
     private static final String PROP_JOB_PERIOD_SECS = "hawkular-services.backfill.job-period-secs";
     private static final String PROP_JOB_THREADS = "hawkular-services.backfill.job-threads";
     private static final String PROP_PING_PERIOD_FACTOR = "hawkular-services.backfill.ping-period-factor";
@@ -136,6 +141,11 @@ public class BackfillCacheManager implements BackfillCache {
     private static final int PING_PERIOD_MIN_SECS;
     private static final double PING_PERIOD_FACTOR;
 
+    public static final String FEED_PREFIX = "hawkular-feed-availability-";
+
+    private static final String MONITORING_TYPE_KEY = "hawkular-services.monitoring-type";
+    private static final String MONITORING_TYPE_VALUE_REMOTE = "remote";
+
     static {
         int jobPeriodSecs;
         int jobThreads;
@@ -143,28 +153,28 @@ public class BackfillCacheManager implements BackfillCache {
         double pingPeriodFactor;
         try {
             jobPeriodSecs = Integer
-                    .valueOf(System.getProperty(PROP_JOB_PERIOD_SECS, "30"))
+                    .valueOf(System.getProperty(PROP_JOB_PERIOD_SECS, DEFAULT_JOB_PERIOD_SECS))
                     .intValue();
         } catch (Exception e) {
             jobPeriodSecs = 30;
         }
         try {
             jobThreads = Integer
-                    .valueOf(System.getProperty(PROP_JOB_THREADS, "10"))
+                    .valueOf(System.getProperty(PROP_JOB_THREADS, DEFAULT_JOB_THREADS))
                     .intValue();
         } catch (Exception e) {
             jobThreads = 10;
         }
         try {
             pingPeriodFactor = Double
-                    .valueOf(System.getProperty(PROP_PING_PERIOD_FACTOR, "2.5"))
+                    .valueOf(System.getProperty(PROP_PING_PERIOD_FACTOR, DEFAULT_PING_PERIOD_FACTOR))
                     .doubleValue();
         } catch (Exception e) {
             pingPeriodFactor = 2.5;
         }
         try {
             pingPeriodMinSecs = Integer
-                    .valueOf(System.getProperty(PROP_PING_PERIOD_MIN_SECS, "125"))
+                    .valueOf(System.getProperty(PROP_PING_PERIOD_MIN_SECS, DEFAULT_PING_PERIOD_MIN_SECS))
                     .intValue();
         } catch (Exception e) {
             pingPeriodMinSecs = 125;
@@ -257,7 +267,7 @@ public class BackfillCacheManager implements BackfillCache {
 
     /**
      * Reset the memberNumber for this cache member given the new cluster topology. Each member should execute
-     * this on a topology change.  This method and {@link BackfillCacheManager#isResponsible(String)}
+     * this on a topology change.  This method and {@link BackfillCacheManager#isResponsible(String)} work together.
      */
     @Override
     public void processTopologyChange() {
@@ -330,6 +340,123 @@ public class BackfillCacheManager implements BackfillCache {
         }
     }
 
+    @Override
+    @Lock(LockType.READ)
+    public void forceBackfill(String feedId) {
+        String feedAvailabilityMetricId = FEED_PREFIX + feedId;
+
+        if (!isResponsible(feedAvailabilityMetricId)) {
+            return;
+        }
+
+        // Fetch all tenants for the feed
+        Set<Feed> feeds = inventory.tenants().getAll().feeds().getAll(With.id(feedId)).entities();
+        if (feeds.isEmpty()) {
+            log.errorf("Expected at least one tenant for feedId [%s]", feedId);
+            return;
+        }
+
+        for (Feed feed : feeds) {
+            forceBackfill(feed.getPath().ids().getTenantId(), feedAvailabilityMetricId);
+        }
+    }
+
+    private void forceBackfill(String tenantId, String feedAvailabilityMetricId) {
+        CacheKey key = new CacheKey(tenantId, feedAvailabilityMetricId);
+        CacheValue value = backfillCache.getOrDefault(key, new CacheValue());
+
+        // backfill situation
+        log.infof("Feed %s has been reported down and will be backfilled.", key);
+        doBackfill(key, value);
+
+    }
+
+    private void doBackfill(CacheKey key, CacheValue value) {
+        // only backfill once, so stop the backfill job
+        cancelJob(key);
+
+        // mark the cache entry as no longer having a backfill job running
+        value.setMaxQuietPeriodMs(0L);
+        backfillCache.put(key, value);
+
+        // Fetch from hwkinventory all avail metrics for the feed on this tenant
+        Set<org.hawkular.inventory.api.model.Metric> availMetricsForFeed = inventory
+                .tenants()
+                .get(key.getTenantId())
+                .feeds()
+                .get(key.getFeedId())
+                .metricTypes()
+                .getAll(With.propertyValue("__metric_data_type", MetricDataType.AVAILABILITY.getDisplayName()))
+                .metrics()
+                .getAll()
+                .entities();
+
+        long now = System.currentTimeMillis();
+
+        List<DataPoint<AvailabilityType>> unknown = new ArrayList<>(1);
+        unknown.add(new DataPoint<AvailabilityType>(now, AvailabilityType.UNKNOWN));
+
+        List<DataPoint<AvailabilityType>> down = new ArrayList<>(1);
+        down.add(new DataPoint<AvailabilityType>(now, AvailabilityType.DOWN));
+
+        List<Metric<AvailabilityType>> availabilities = new ArrayList<>(availMetricsForFeed.size() + 1);
+
+        // Set UNKNOWN for all remotely monitored avail metrics reported by this feed/tenant
+        // Set DOWN for all locally monitored avail metrics, or by default, reported by this feed/tenant
+        for (org.hawkular.inventory.api.model.Metric invMetric : availMetricsForFeed) {
+            MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
+                    invMetric.getId());
+            String monitoringType = (String) invMetric.getProperties().get(MONITORING_TYPE_KEY);
+            List<DataPoint<AvailabilityType>> availList = MONITORING_TYPE_VALUE_REMOTE
+                    .equalsIgnoreCase(monitoringType) ? unknown : down;
+            Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, availList);
+            availabilities.add(backfillAvail);
+        }
+
+        // Set DOWN avail for the feed/tenant itself
+        MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
+                key.getMetricId());
+        Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, down);
+        availabilities.add(backfillAvail);
+
+        // Push the avail to hwkmetrics
+        Observable<Metric<AvailabilityType>> metrics = Functions.metricToObservable(key.getTenantId(),
+                availabilities, MetricType.AVAILABILITY);
+        Observable<Void> observable = metricsService.addDataPoints(MetricType.AVAILABILITY, metrics);
+        observable.subscribe(new Subscriber<Void>() {
+
+            @Override
+            public void onCompleted() {
+                if (log.isDebugEnabled()) {
+                    log.debugf("Successful backfill of Feed %s with %s", key, availabilities);
+                } else {
+                    log.infof("Successful backfill of Feed %s", key);
+                }
+            }
+
+            @Override
+            public void onError(Throwable arg0) {
+                log.warnf("Failed to backfill Feed %s with %s: %s", key, availabilities, arg0);
+            }
+
+            @Override
+            public void onNext(Void arg0) {
+            }
+        });
+    }
+
+    private void cancelJob(CacheKey key) {
+        ScheduledFuture<?> job = jobMap.get(key);
+        if (null != job) {
+            job.cancel(true);
+        }
+        try {
+            jobMap.remove(key);
+        } catch (Exception e) {
+            log.errorf("Failed to cancel BackfillCheck job for %s", key);
+        }
+    }
+
     public class BackfillCheckJob implements Runnable {
 
         private CacheKey key;
@@ -364,87 +491,6 @@ public class BackfillCacheManager implements BackfillCache {
             doBackfill(key, value);
         }
 
-        private void doBackfill(CacheKey key, CacheValue value) {
-            // only backfill once, so stop the backfill job
-            cancelJob(key);
-
-            // mark the cache entry as no longer having a backfill job running
-            value.setMaxQuietPeriodMs(0L);
-            backfillCache.put(key, value);
-
-            // Fetch from hwkinventory all avail metrics for the feed on this tenant
-            Set<org.hawkular.inventory.api.model.Metric> availMetricsForFeed = inventory
-                    .tenants()
-                    .get(key.getTenantId())
-                    .feeds()
-                    .get(key.getFeedId())
-                    .metricTypes()
-                    .getAll(With.propertyValue("__metric_data_type", MetricDataType.AVAILABILITY.getDisplayName()))
-                    .metrics()
-                    .getAll()
-                    .entities();
-
-            long now = System.currentTimeMillis();
-
-            List<DataPoint<AvailabilityType>> unknown = new ArrayList<>(1);
-            unknown.add(new DataPoint<AvailabilityType>(now, AvailabilityType.UNKNOWN));
-
-            List<DataPoint<AvailabilityType>> down = new ArrayList<>(1);
-            down.add(new DataPoint<AvailabilityType>(now, AvailabilityType.DOWN));
-
-            List<Metric<AvailabilityType>> availabilities = new ArrayList<>(availMetricsForFeed.size() + 1);
-
-            // Set UNKNOWN for all avail metrics reported by this feed/tenant
-            for (org.hawkular.inventory.api.model.Metric invMetric : availMetricsForFeed) {
-                MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
-                        invMetric.getId());
-                Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, unknown);
-                availabilities.add(backfillAvail);
-            }
-
-            // Set DOWN avail for the feed/tenant itself
-            MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
-                    key.getMetricId());
-            Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, down);
-            availabilities.add(backfillAvail);
-
-            // Push the avail to hwkmetrics
-            Observable<Metric<AvailabilityType>> metrics = Functions.metricToObservable(key.getTenantId(),
-                    availabilities, MetricType.AVAILABILITY);
-            Observable<Void> observable = metricsService.addDataPoints(MetricType.AVAILABILITY, metrics);
-            observable.subscribe(new Subscriber<Void>() {
-
-                @Override
-                public void onCompleted() {
-                    if (log.isDebugEnabled()) {
-                        log.debugf("Successful backfill of Feed %s with %s", key, availabilities);
-                    } else {
-                        log.infof("Successful backfill of Feed %s", key);
-                    }
-                }
-
-                @Override
-                public void onError(Throwable arg0) {
-                    log.warnf("Failed to backfill Feed %s with %s: %s", key, availabilities, arg0);
-                }
-
-                @Override
-                public void onNext(Void arg0) {
-                }
-            });
-        }
-
-        private void cancelJob(CacheKey key) {
-            ScheduledFuture<?> job = jobMap.get(key);
-            if (null != job) {
-                job.cancel(true);
-            }
-            try {
-                jobMap.remove(key);
-            } catch (Exception e) {
-                log.errorf("Failed to cancel BackfillCheck job for %s", key);
-            }
-        }
     }
 
     public static class CacheKey {
@@ -456,7 +502,7 @@ public class BackfillCacheManager implements BackfillCache {
             super();
             this.tenantId = tenantId;
             this.metricId = metricId;
-            this.feedId = metricId.substring(FeedAvailabilityDataListener.FEED_PREFIX.length());
+            this.feedId = metricId.substring(FEED_PREFIX.length());
         }
 
         public String getTenantId() {
@@ -506,7 +552,6 @@ public class BackfillCacheManager implements BackfillCache {
         public String toString() {
             return "CacheKey [tenantId=" + tenantId + ", metricId=" + metricId + "]";
         }
-
     }
 
     public static class CacheValue {

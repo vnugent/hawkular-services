@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -32,7 +33,9 @@ import org.hawkular.bus.common.BasicMessage;
 import org.hawkular.bus.common.consumer.BasicMessageListener;
 import org.hawkular.cmdgw.api.DeployApplicationResponse;
 import org.hawkular.cmdgw.api.EventDestination;
+import org.hawkular.cmdgw.api.FeedWebSocketClosedEvent;
 import org.hawkular.inventory.paths.CanonicalPath;
+import org.hawkular.listener.cache.BackfillCache;
 import org.jboss.logging.Logger;
 
 /**
@@ -56,10 +59,14 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
     private InitialContext ctx;
     private AlertsService alerts;
 
+    @EJB
+    BackfillCache backfillCacheManager;
+
     @Override
     protected void onBasicMessage(BasicMessage msg) {
 
         if (msg instanceof DeployApplicationResponse) {
+            // TODO: This may not work in a clustered env, I think it would execute N times, once per cluster member
             try {
                 init();
 
@@ -83,10 +90,17 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
             } catch (Exception e) {
                 log.errorf("Error processing event message [%s]: %s", msg.toJSON(), e);
             }
+        } else if (msg instanceof FeedWebSocketClosedEvent) {
+            FeedWebSocketClosedEvent fce = (FeedWebSocketClosedEvent) msg;
+            log.debugf("Feed WebSocket Closed. feedId=%s reason=%s code=%s", fce.getFeedId(), fce.getReason(),
+                    fce.getCode());
+            backfillCacheManager.forceBackfill(fce.getFeedId());
+
         } else if (msg instanceof EventDestination) {
-            // other EventDestination messages are expected but not currently interesting for alerts
+            // other EventDestination messages are expected but not currently interesting
+
         } else {
-            log.warnf("Unexpected Event Message [%s]", msg.toJSON());
+            log.warnf("Unexpected CommandEvent Message [%s]", msg.toJSON());
         }
     }
 

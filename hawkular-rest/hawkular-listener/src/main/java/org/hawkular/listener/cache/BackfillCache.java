@@ -24,8 +24,21 @@ package org.hawkular.listener.cache;
 public interface BackfillCache extends ClusterCache {
 
     /**
+     * Records that we have received UP availability for the given feedAvailabilityMetricId. Ignored
+     * if the current server is not processing the relevant feed.
+     *
      * @param tenantId The tenant for the feed
      * @param feedAvailabilityMetricId The feed avail metricId
      */
     void updateFeedAvailability(String tenantId, String feedAvailabilityMetricId);
+
+    /**
+     * Request an immediate backfill for the given feed [on all of its registered tenants]. Typically
+     * called when we know a feed is down and don't want to wait for the ping detection to timeout.
+     * Ignored if the current server is not processing the relevant feed.
+     *
+     * @param feedId The feed to force backfilling
+     */
+    void forceBackfill(String feedId);
+
 }
