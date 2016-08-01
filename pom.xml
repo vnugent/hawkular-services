@@ -68,7 +68,7 @@
   <properties>
 
     <version.org.hawkular.agent>0.20.0.Final</version.org.hawkular.agent>
-    <version.org.hawkular.alerts>1.1.1.Final</version.org.hawkular.alerts>
+    <version.org.hawkular.alerts>1.1.2.Final-SRC-revision-618e43ba136bc3287ded048ff016481b03f3a580</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.7.5.Final-SRC-revision-0e4ca7bf2980285393be458cb49c08fc3ae77905</version.org.hawkular.commons>
     <version.org.hawkular.inventory>0.17.3.Final</version.org.hawkular.inventory>
     <version.org.hawkular.metrics>0.17.0.Final</version.org.hawkular.metrics>
