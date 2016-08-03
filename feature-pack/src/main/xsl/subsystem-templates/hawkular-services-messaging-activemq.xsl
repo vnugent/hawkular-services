@@ -30,7 +30,6 @@
     <jms-topic name="HawkularAlertData" entries="java:/topic/HawkularAlertData"/>
     <jms-queue name="HawkularAlertsPluginsQueue" entries="java:/queue/HawkularAlertsPluginsQueue"/>
     <jms-queue name="HawkularAlertsActionsResponseQueue" entries="java:/queue/HawkularAlertsActionsResponseQueue"/>
-    <jms-topic name="HawkularCommandEvent" entries="java:/topic/HawkularCommandEvent"/>
     <jms-topic name="HawkularAlertsActionsTopic" entries="java:/topic/HawkularAlertsActionsTopic"/>
 
     <xsl:comment> Metrics </xsl:comment>
@@ -42,6 +41,11 @@
 
     <xsl:comment> Inventory </xsl:comment>
     <jms-topic name="HawkularInventoryChanges" entries="java:/topic/HawkularInventoryChanges"/>
+
+    <xsl:comment> Hawkular/Glue </xsl:comment>
+    <jms-topic name="HawkularCommandEvent" entries="java:/queue/HawkularCommandEvent"/>
+    <jms-topic name="HawkularQueue" entries="java:/queue/HawkularQueue"/>
+    <jms-topic name="HawkularTopic" entries="java:/topic/HawkularTopic"/>
   </xsl:template>
 
   <!-- copy everything else as-is -->
