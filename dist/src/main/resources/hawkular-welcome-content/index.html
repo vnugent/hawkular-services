@@ -45,7 +45,11 @@
              setUnavailableStatus(serviceName, "Unknown, sorry");
            }
          };
-         xmlhttp.open("GET", "hawkular/" + serviceName + "/status", true);
+         var url = "hawkular/" + serviceName + "/status";
+         if (serviceName == "services") {
+             url = "hawkular/status";
+         }
+         xmlhttp.open("GET", url, true);
          xmlhttp.send();
        }
 
@@ -57,7 +61,12 @@
 
        function setStatus(serviceName, status) {
          resetStatus(serviceName);
-         document.getElementById(serviceName + "_version").innerHTML = status["Implementation-Version"];
+         if (serviceName == "services") {
+           var servicesVersion = status["Implementation-Version"] + " (commit " + status["Built-From-Git-SHA1"] + ")";
+           document.getElementById(serviceName + "_version").innerHTML = servicesVersion;
+         } else {
+           document.getElementById(serviceName + "_version").innerHTML = status["Implementation-Version"];
+         }
          document.getElementById(serviceName + "_available").innerHTML = "Running";
        }
 
@@ -67,6 +76,7 @@
        }
 
        window.setInterval(function () {
+         statusRequest("services");
          statusRequest("metrics");
          statusRequest("alerts");
          statusRequest("inventory");
@@ -88,6 +98,7 @@
            <a href="/hawkular/wildfly-agent/installer">WildFly Agent Installer</a></p>
         <div class="note">
           <table>
+            <tr><td>Hawkular Services:  </td><td><span id="services_available"   class="available">Please wait...</span></td><td><span id="services_version"  ></span></td><td><span id="services_unavailable"   class="unavailable"></span></td></tr>
             <tr><td>Hawkular Metrics:  </td><td><span id="metrics_available"   class="available">Please wait...</span></td><td><span id="metrics_version"  ></span></td><td><span id="metrics_unavailable"   class="unavailable"></span></td></tr>
             <tr><td>Hawkular Alerts:   </td><td><span id="alerts_available"    class="available">Please wait...</span></td><td><span id="alerts_version"   ></span></td><td><span id="alerts_unavailable"    class="unavailable"></span></td></tr>
             <tr><td>Hawkular Inventory:</td><td><span id="inventory_available" class="available">Please wait...</span></td><td><span id="inventory_version"></span></td><td><span id="inventory_unavailable" class="unavailable"></span></td></tr>

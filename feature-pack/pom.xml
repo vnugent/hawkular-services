@@ -45,6 +45,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-status</artifactId>
+      <type>war</type>
+      <version>0.0.8.Final-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.hawkular.commons</groupId>
       <artifactId>hawkular-nest-feature-pack</artifactId>
       <type>zip</type>
