@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    and other contributors as indicated by the @author tags.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<assembly  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>org.mortbay.jetty.alpn:alpn-boot</include>
+      </includes>
+      <outputDirectory>/opt/jboss/wildfly/bin</outputDirectory>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/${project.build.finalName}/modules/system/add-ons/hawkular-agent</directory>
+      <outputDirectory>${docker.as.root}/modules/system/add-ons/hawkular-agent</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/${project.build.finalName}/modules/system/layers/hawkular</directory>
+      <outputDirectory>${docker.as.root}/modules/system/layers/hawkular</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/${project.build.finalName}/modules/system/layers/base/org/jboss/as/product/hawkular</directory>
+      <outputDirectory>${docker.as.root}/modules/system/layers/base/org/jboss/as/product/hawkular</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/${project.build.finalName}/hawkular-welcome-content</directory>
+      <outputDirectory>${docker.as.root}/hawkular-welcome-content</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+  <files>
+    <file>
+      <source>src/main/resources/startcmd.sh</source>
+      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/standalone.xml</source>
+      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-wildfly-agent-installer.jar</source>
+      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-wildfly-agent-wf-extension.zip</source>
+      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/modules/layers.conf</source>
+      <outputDirectory>${docker.as.root}/modules/</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/bin/product.conf</source>
+      <outputDirectory>${docker.as.root}/bin/</outputDirectory>
+    </file>
+  </files>
+</assembly>
