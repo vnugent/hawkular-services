@@ -30,8 +30,8 @@ import org.hawkular.alerts.api.model.event.Event;
 import org.hawkular.alerts.api.services.AlertsService;
 import org.hawkular.bus.common.BasicMessage;
 import org.hawkular.bus.common.consumer.BasicMessageListener;
-import org.hawkular.cmdgw.api.DeployApplicationResponse;
 import org.hawkular.cmdgw.api.EventDestination;
+import org.hawkular.cmdgw.api.ResourcePathResponse;
 import org.hawkular.inventory.paths.CanonicalPath;
 import org.jboss.logging.Logger;
 
@@ -59,35 +59,52 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
     @Override
     protected void onBasicMessage(BasicMessage msg) {
 
-        if (msg instanceof DeployApplicationResponse) {
-            try {
-                init();
-
-                DeployApplicationResponse dar = (DeployApplicationResponse) msg;
-
-                String canonicalPathString = dar.getResourcePath();
-                CanonicalPath canonicalPath = CanonicalPath.fromString(canonicalPathString);
-                String tenantId = canonicalPath.ids().getTenantId();
-                String eventId = UUID.randomUUID().toString();
-                String category = "Hawkular Deployment";
-                String text = dar.getStatus().name().toLowerCase();
-                Event event = new Event(tenantId, eventId, category, text);
-                event.addContext("resource_path", canonicalPathString);
-                event.addContext("message", dar.getMessage());
-                event.addTag("miq.event_type", "hawkular_deployment." + ("error".equals(text) ? text : "ok"));
-                event.addTag("miq.resource_type", "MiddlewareServer");
-                log.debugf("Received message [%s] and forwarding it as [%s]", dar, event);
-
-                alerts.addEvents(Collections.singleton(event));
-
-            } catch (Exception e) {
-                log.errorf("Error processing event message [%s]: %s", msg.toJSON(), e);
+        String messageClass = msg.getClass().getSimpleName();
+        log.infof("Received message [%s] with name [%s]", msg, messageClass); //TODO debug
+        switch (messageClass) {
+            case "AddDatasourceResponse":
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource");
+                break;
+            case "DeployApplicationResponse":
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment");
+                break;
+            case "RemoveDatasourceResponse":
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource_remove");
+                break;
+            case "UndeployApplicationResponse": {
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment_remove");
+                break;
             }
-        } else if (msg instanceof EventDestination) {
-            // other EventDestination messages are expected but not currently interesting
+            default: {
+                // other EventDestination messages are expected but not currently interesting
+                if (!(msg instanceof EventDestination)) {
+                    log.warnf("Unexpected CommandEvent Message [%s]", msg.toJSON());
+                }
+            }
+        }
+    }
 
-        } else {
-            log.warnf("Unexpected CommandEvent Message [%s]", msg.toJSON());
+    private void addEvent(ResourcePathResponse response, String category, String miqEventType) {
+        try {
+            init();
+
+            String canonicalPathString = response.getResourcePath();
+            CanonicalPath canonicalPath = CanonicalPath.fromString(canonicalPathString);
+            String tenantId = canonicalPath.ids().getTenantId();
+            String eventId = UUID.randomUUID().toString();
+            String status = response.getStatus().name().toLowerCase();
+            Event event = new Event(tenantId, eventId, category, status);
+            event.addContext("resource_path", canonicalPathString);
+            event.addContext("message", response.getMessage());
+            event.addTag("miq.event_type", miqEventType + ("error".equals(status) ? ".error" : ".ok"));
+            event.addTag("miq.resource_type", "MiddlewareServer");
+
+            log.infof("Received message [%s] and forwarding it as [%s]", response, event); //TODO debug
+
+            alerts.addEvents(Collections.singleton(event));
+
+        } catch (Exception e) {
+            log.errorf("Error processing event message [%s]: %s", response.toJSON(), e);
         }
     }
 
