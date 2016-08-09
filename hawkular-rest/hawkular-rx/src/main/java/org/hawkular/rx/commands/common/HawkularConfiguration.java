@@ -28,7 +28,7 @@ public class HawkularConfiguration {
     public static final String URL_ACCOUNTS = "http://127.0.0.1:8080/hawkular/accounts";
     public static final String URL_BTM = "http://127.0.0.1:8080/hawkular/btm";
     public static final String URL_ALERTS = "http://127.0.0.1:8080/hawkular/alerts";
-    public static final String URL_INVENTORY = "http://127.0.0.1:8080/hawkular/inventory";
+    public static final String URL_INVENTORY = "http://127.0.0.1:8080/hawkular/inventory/deprecated";
     public static final String URL_METRICS = "http://127.0.0.1:8080/hawkular/metrics";
 
 
