@@ -42,6 +42,7 @@ public class OkClient implements HttpClient {
                 .url(url)
                 .addHeader("Authorization", authToken)
                 .addHeader("Hawkular-Persona", persona)
+                .addHeader("Hawkular-Tenant", "hawkular")
                 .post(body)
                 .build();
 //        this.delegatingClient.interceptors().add(null);
@@ -66,6 +67,7 @@ public class OkClient implements HttpClient {
                 .url(url)
                 .addHeader("Authorization", authToken)
                 .addHeader("Hawkular-Persona", persona)
+                .addHeader("Hawkular-Tenant", "hawkular")
                 .get()
                 .build();
 
@@ -79,6 +81,7 @@ public class OkClient implements HttpClient {
                 .url(url)
                 .addHeader("Authorization", authToken)
                 .addHeader("Hawkular-Persona", persona)
+                .addHeader("Hawkular-Tenant", "hawkular")
                 .put(body)
                 .build();
 
@@ -91,6 +94,7 @@ public class OkClient implements HttpClient {
                 .url(url)
                 .addHeader("Authorization", authToken)
                 .addHeader("Hawkular-Persona", persona)
+                .addHeader("Hawkular-Tenant", "hawkular")
                 .delete()
                 .build();
 

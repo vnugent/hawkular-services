@@ -98,8 +98,12 @@ public class RestURLImpl extends RestBase implements RestURL {
                 createUrlCommandInjector.select(Initialized.withValues(url.getUrl(), authToken, tenantId)).get();
         Observable<String> observer = createUrlCommand.toObservable();
         observer.subscribe((commandResponse) -> {
-            URI uri = URI.create(commandResponse);
-            asyncResponse.resume(Response.created(uri).build());
+            if (commandResponse != null) {
+                URI uri = URI.create(commandResponse);
+                asyncResponse.resume(Response.created(uri).build());
+            } else {
+                asyncResponse.resume(Response.ok("Url " + url + " already exists.").build());
+            }
         });
     }
 
