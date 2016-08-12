@@ -2,7 +2,7 @@
 
 This module contains the sources to build a Docker container with Hawkular Services.
 
-== Cassandra 
+== Cassandra
 
 Hawkular Services requires a running Cassandra instance with RPC enabled.  If you don't have an existing
 Cassandra instance, you can start one using Docker.
