@@ -9,12 +9,10 @@ Cassandra instance, you can start one using Docker.
 
   docker run --name hawkular-cassandra -e CASSANDRA_START_RPC=true -d cassandra:3.7
 
-The cassandra instance should now be accessible via the local docker network.  To get the ip address
-of the running container, you can use the "docker ps" command to get the ID of the running cassandra
-container, and then "docker inspect" to find the ip address of the container.
+This command should return the id of the running container.  You can also verify that it is running
+by using the "docker ps" command.
 
   docker ps
-  docker inspect <container ID>
 
 == Building Hawkular Services
 
@@ -30,5 +28,5 @@ By default, this will create a docker image with the name "<username>/hawkular-s
 
 Next, start up the hawkular services container and point it to the Cassandra instance.
 
-  docker run -e CASSANDRA_NODES=<cassandra ip> <username>/hawkular-services
+  docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra <username>/hawkular-services
 
