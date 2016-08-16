@@ -116,7 +116,7 @@
             <!-- Docker Image to use -->
             <image>
               <alias>hawkular-services</alias>
-              <name>${maven.username}/hawkular-services</name>
+              <name>${user.name}/hawkular-services</name>
               <build>
                 <from>${docker.base-image}</from>
                 <maintainer>Heiko W. Rupp, hrupp@redhat.com</maintainer>
