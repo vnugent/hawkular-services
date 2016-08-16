@@ -25,4 +25,5 @@ ${AS_ROOT}/bin/standalone.sh -b 0.0.0.0 \
        -Djboss.server.log.dir=/opt/data/log \
        -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
        -Dhawkular.rest.user=${HAWKULAR_USER} \
-       -Dhawkular.rest.password=${HAWKULAR_PASSWORD}
+       -Dhawkular.rest.password=${HAWKULAR_PASSWORD} \
+       -Dhawkular.metrics.default-ttl=${HAWKULAR_METRICS_TTL:-14}

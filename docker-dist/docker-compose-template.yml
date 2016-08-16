@@ -41,6 +41,7 @@ hawkular:
     - HAWKULAR_USER=jdoe
     - HAWKULAR_PASSWORD=password
     - HAWKULAR_AGENT_ENABLE=true
+    - HAWKULAR_METRICS_TTL=17
 # The used Cassandra container
 myCassandra:
   image: cassandra:3.7

@@ -40,6 +40,7 @@
     <alpn-boot.version>8.1.7.v20160121</alpn-boot.version>
     <version.cassandra>3.7</version.cassandra>
     <hawkular.agent.enabled>true</hawkular.agent.enabled>
+    <hawkular.metrics.ttl>14</hawkular.metrics.ttl>
   </properties>
 
   <name>Hawkular Services Docker Distribution</name>
@@ -141,6 +142,7 @@
                   <HAWKULAR_AGENT_ENABLE>${hawkular.agent.enabled}</HAWKULAR_AGENT_ENABLE>
                   <AS_ROOT>${docker.as.root}</AS_ROOT>
                   <JAVA_OPS>${docker.java.opts}</JAVA_OPS>
+                  <HAWKULAR_METRICS_TTL>${hawkular.metrics.ttl}</HAWKULAR_METRICS_TTL>
                 </env>
                 <cmd>
                   <shell>/opt/hawkular/bin/startcmd.sh</shell>
