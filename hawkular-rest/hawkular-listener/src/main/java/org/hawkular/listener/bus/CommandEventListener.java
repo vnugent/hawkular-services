@@ -63,16 +63,16 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
         log.infof("Received message [%s] with name [%s]", msg, messageClass); //TODO debug
         switch (messageClass) {
             case "AddDatasourceResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource");
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource", "MiddlewareServer");
                 break;
             case "DeployApplicationResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment");
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment", "MiddlewareServer");
                 break;
             case "RemoveDatasourceResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource_remove");
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource_remove", "MiddlewareServer");
                 break;
             case "UndeployApplicationResponse": {
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment_remove");
+                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment_remove", "MiddlewareServer");
                 break;
             }
             default: {
@@ -84,7 +84,8 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
         }
     }
 
-    private void addEvent(ResourcePathResponse response, String category, String miqEventType) {
+    private void addEvent(ResourcePathResponse response, String category, String miqEventType,
+            String miqResourceType) {
         try {
             init();
 
@@ -97,7 +98,7 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
             event.addContext("resource_path", canonicalPathString);
             event.addContext("message", response.getMessage());
             event.addTag("miq.event_type", miqEventType + ("error".equals(status) ? ".error" : ".ok"));
-            event.addTag("miq.resource_type", "MiddlewareServer");
+            event.addTag("miq.resource_type", miqResourceType);
 
             log.infof("Received message [%s] and forwarding it as [%s]", response, event); //TODO debug
 
