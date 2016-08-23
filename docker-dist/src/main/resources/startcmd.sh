@@ -16,11 +16,11 @@
 # limitations under the License.
 #
 
-hostname > /etc/machine-id
+echo ${HOSTNAME} > /etc/machine-id
 ${AS_ROOT}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
 ${AS_ROOT}/bin/standalone.sh -b 0.0.0.0 \
        -bmanagement 0.0.0.0 \
-       -Djboss.server.name=`hostname` \
+       -Djboss.server.name=${HOSTNAME} \
        -Djboss.server.data.dir=/opt/data/data \
        -Djboss.server.log.dir=/opt/data/log \
        -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
