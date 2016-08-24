@@ -78,7 +78,7 @@ public class AgentITest extends AbstractTestBase {
                                         "[%s] should have returned a json array with size >= 1, while it returned [%s]",
                                         testResponse.getRequest(), foundDataPoints));
                             });
-                }, Retry.times(50).delay(100));
+                }, Retry.times(500).delay(100));
     }
 
     /**
@@ -120,7 +120,7 @@ public class AgentITest extends AbstractTestBase {
                                 "[%s] should have returned a json array with size >= 1, while it returned [%s]",
                                 testResponse.getRequest(), foundDataPoints));
                     });
-                } , Retry.times(50).delay(100));
+                } , Retry.times(500).delay(100));
     }
 
     /**
