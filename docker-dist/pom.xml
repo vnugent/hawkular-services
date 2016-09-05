@@ -212,5 +212,35 @@
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>docker-dist-zip</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>assemble-docker-files</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <formats>
+                    <format>zip</format>
+                  </formats>
+                  <descriptors>
+                    <descriptor>src/main/docker/docker-assembly.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
