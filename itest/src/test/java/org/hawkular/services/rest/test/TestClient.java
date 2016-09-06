@@ -147,6 +147,19 @@ public class TestClient {
             return this;
         }
 
+        public TestResponse putJson(String json) throws IOException {
+            Request request = requestBuilder.put(RequestBody.create(MEDIA_TYPE_JSON, json)).build();
+            log.tracef("About to execute request [%s]", request);
+            Response response = client.newCall(request).execute();
+            log.tracef("Got response [%s]", response);
+            return new TestResponse(request, response);
+        }
+
+        public TestResponse putObject(Object payload) throws IOException {
+            String json = mapper.writeValueAsString(payload);
+            return putJson(json);
+        }
+
         public TestRequestBuilder url(HttpUrl url) {
             requestBuilder.url(url);
             return this;

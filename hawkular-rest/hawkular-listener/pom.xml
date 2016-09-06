@@ -73,16 +73,19 @@
     <dependency>
       <groupId>org.hawkular.metrics</groupId>
       <artifactId>hawkular-metrics-api-util</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.metrics</groupId>
       <artifactId>hawkular-metrics-bus</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.metrics</groupId>
       <artifactId>hawkular-metrics-core-service</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
