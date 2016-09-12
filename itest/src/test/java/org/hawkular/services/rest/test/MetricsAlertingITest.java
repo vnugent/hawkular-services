@@ -132,7 +132,7 @@ public class MetricsAlertingITest extends AbstractTestBase {
 
         /* Check if we have generated an event */
         testClient.newRequest()
-                .path(gaugePath)
+                .path(eventsTriggerPath)
                 .get()
                 .assertWithRetries(testResponse -> {
                     testResponse
