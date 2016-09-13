@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-services</artifactId>
-    <version>0.0.12.Final-SNAPSHOT</version>
+    <version>0.0.12.Final</version>
   </parent>
 
   <artifactId>hawkular-services-feature-pack</artifactId>
@@ -41,14 +41,14 @@
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-rest-api</artifactId>
       <type>war</type>
-      <version>0.0.12.Final-SNAPSHOT</version>
+      <version>0.0.12.Final</version>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-status</artifactId>
       <type>war</type>
-      <version>0.0.12.Final-SNAPSHOT</version>
+      <version>0.0.12.Final</version>
     </dependency>
 
     <dependency>
