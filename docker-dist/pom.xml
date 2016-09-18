@@ -141,7 +141,7 @@
                   <HAWKULAR_PASSWORD>password</HAWKULAR_PASSWORD>
                   <HAWKULAR_AGENT_ENABLE>${hawkular.agent.enabled}</HAWKULAR_AGENT_ENABLE>
                   <AS_ROOT>${docker.as.root}</AS_ROOT>
-                  <JAVA_OPS>${docker.java.opts}</JAVA_OPS>
+                  <JAVA_OPTS>${docker.java.opts}</JAVA_OPTS>
                   <HAWKULAR_METRICS_TTL>${hawkular.metrics.ttl}</HAWKULAR_METRICS_TTL>
                 </env>
                 <cmd>
