@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-services</artifactId>
-    <version>0.0.13.Final</version>
+    <version>0.0.14.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>hawkular-services-dist</artifactId>
