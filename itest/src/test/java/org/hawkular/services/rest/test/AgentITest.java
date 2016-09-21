@@ -178,7 +178,7 @@ public class AgentITest extends AbstractTestBase {
 
                             });
 
-                }, Retry.times(50).delay(1000));
+                }, Retry.times(500).delay(1000));
 
     }
 }
