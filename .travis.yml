@@ -1,7 +1,13 @@
+sudo: required
+dist: trusty
+
 language: java
-# Enable container-based infrastructure
-# see http://docs.travis-ci.com/user/workers/container-based-infrastructure/
-sudo: false
+services:
+  - docker
+
+env:
+  global:
+    - secure: "d7jJmEFMcdJv7UiGhvrOJF/1zOjLpC1vaMrNtOWXoM6DmnC+Jmg9wdeyex6eUziBpVvbZKOc0mJ9Kk2ITKNgN1hDWaY+RuoDKY2+OfPRyiLQbFaKL6xc5gKVlCFKrP8//0XNXhzkKDeOogp8mx+cA0G+wuN7H6NhTC7hYUxANpQJ2P2WzCH7HYaqMP6VF2kq2jEipAmlwVWUgi+wSG9+SW+8DU1Jus9mJygshC7GzE9Ym+Asy0Rzi06BcVUl29/dP9DpA0Jq59bM8nAyIth9mRtS2MUsycJM6FOt4NppzOzdQygRd8mP7mSPv2KeOT7brFdMiRi+2CHcuNA8cZzBZgiJmA9yNt1BNObu1mTTJY3mYefZgvnl/Duz4ggFr79T4zqtt93Eu3K1O0EKsSWrugA3ZVO6sRI7TLeSjaXv1idO4iXJ7DoLgks2PwtuKke20qRDzK7g5LdqmyKA+TG2vSsUvGzeUOfLpvHCi9y+p9wLlpULSxsTRFf2EiHisBGZn/Vs6to6JGDVoJQDpD0bTHux/Kmmq/ZS+LDcfgPLUdgXltoTTTsgT97iocVCGXH0+Dz6dEoptVTXyQOGGZXD3KUbh5KcyTi4Gmiowt5z3OvxCYxmVyD/tpzj0cMwPTh4x0aEoyHNC/yUmLraSLbNxYKlc7OSKfh9WDDk5L7RwPM="
 
 # manage the caches here https://travis-ci.org/hawkular/hawkular-services/caches
 cache:
@@ -18,6 +24,9 @@ notifications:
     on_success: change
 
 install:
+- bash .travis.install.maven.sh "3.3.9" "${HOME}/mvn-home"
+- export M2_HOME=${HOME}/mvn-home
+- export PATH=${HOME}/mvn-home/bin:${PATH}
 - mvn -version -B
 # unshallow is needed by license-maven-plugin
 - git fetch origin --unshallow || true
@@ -25,6 +34,9 @@ install:
 script:
 - mvn -s .travis.maven.settings.xml verify -Pitest -Dfailsafe.useFile=false | grep -vF "[INFO] Downloading:" | grep
   -vF "[INFO] Downloaded:"; test ${PIPESTATUS[0]} -eq 0
+
+after_success:
+- bash .travis.hawkular-client.ruby.sh
 
 before_cache:
 # Clean the cached directories once their size exceeds the space left on the partition.
