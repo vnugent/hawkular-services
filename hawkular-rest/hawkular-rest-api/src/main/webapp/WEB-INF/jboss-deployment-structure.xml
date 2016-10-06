@@ -25,8 +25,9 @@
       <module name="org.hawkular.bus"/>
       <module name="org.hawkular.commons.cassandra-driver"/>
       <module name="org.hawkular.commons.hawkular-inventory-paths"/>
-      <module name="deployment.hawkular-metrics-component.war" />
-      <module name="deployment.hawkular-alerts-rest.war" />
+      <module name="org.infinispan" />
+      <module name="deployment.hawkular-metrics.ear.hawkular-alerts.war" />
+      <module name="deployment.hawkular-metrics.ear.hawkular-metrics.war" />
       <module name="deployment.hawkular-inventory-dist.war" />
     </dependencies>
   </deployment>

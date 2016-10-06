@@ -51,7 +51,7 @@ import org.jboss.logging.Logger;
 public class CommandEventListener extends BasicMessageListener<BasicMessage> {
     private final Logger log = Logger.getLogger(CommandEventListener.class);
 
-    private static final String ALERTS_SERVICE = "java:global/hawkular-alerts-rest/CassAlertsServiceImpl";
+    private static final String ALERTS_SERVICE = "java:global/hawkular-metrics/hawkular-alerts/CassAlertsServiceImpl";
 
     private InitialContext ctx;
     private AlertsService alerts;

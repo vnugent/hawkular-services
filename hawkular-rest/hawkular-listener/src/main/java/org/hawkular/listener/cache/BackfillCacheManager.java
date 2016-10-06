@@ -38,6 +38,7 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.naming.InitialContext;
 
 import org.hawkular.inventory.api.Inventory;
 import org.hawkular.inventory.api.Metrics;
@@ -146,6 +147,9 @@ public class BackfillCacheManager implements BackfillCache {
     private static final String MONITORING_TYPE_KEY = "hawkular-services.monitoring-type";
     private static final String MONITORING_TYPE_VALUE_REMOTE = "remote";
 
+    private static final String INVENTORY_SERVICE = "java:global/Hawkular/Inventory";
+    private static final String METRICS_SERVICE = "java:global/Hawkular/Metrics";
+
     static {
         int jobPeriodSecs;
         int jobThreads;
@@ -206,6 +210,11 @@ public class BackfillCacheManager implements BackfillCache {
 
     private Map<CacheKey, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
 
+    // Lazy init these when we actually need to do a backfill
+    private InitialContext ctx;
+    private Inventory inventory;
+    private MetricsService metricsService;
+
     /**
      * Access to the manager of the caches used for tracking avail.
      */
@@ -218,11 +227,11 @@ public class BackfillCacheManager implements BackfillCache {
     @Resource(lookup = "java:jboss/infinispan/cache/hawkular-services/backfill")
     private Cache<CacheKey, CacheValue> backfillCache;
 
-    @Resource(lookup = "java:global/Hawkular/Inventory")
-    Inventory inventory;
+    //@Resource(lookup = "java:global/Hawkular/Inventory")
+    //Inventory inventory;
 
-    @Resource(lookup = "java:global/Hawkular/Metrics")
-    MetricsService metricsService;
+    //@Resource(lookup = "java:global/Hawkular/Metrics")
+    //MetricsService metricsService;
 
     @EJB
     BackfillCache self;
@@ -372,6 +381,8 @@ public class BackfillCacheManager implements BackfillCache {
     }
 
     private void doBackfill(CacheKey key, CacheValue value) {
+        initServices();
+
         // only backfill once, so stop the backfill job
         cancelJob(key);
 
@@ -443,6 +454,22 @@ public class BackfillCacheManager implements BackfillCache {
             public void onNext(Void arg0) {
             }
         });
+    }
+
+    private synchronized void initServices() {
+        try {
+            if (ctx == null) {
+                ctx = new InitialContext();
+            }
+            if (inventory == null) {
+                inventory = (Inventory) ctx.lookup(INVENTORY_SERVICE);
+            }
+            if (metricsService == null) {
+                metricsService = (MetricsService) ctx.lookup(METRICS_SERVICE);
+            }
+        } catch (Exception e) {
+            log.errorf("Failed to access JNDI Services: %s", e.getMessage());
+        }
     }
 
     private void cancelJob(CacheKey key) {

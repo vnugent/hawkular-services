@@ -28,12 +28,11 @@
         <local-cache name="partition"/>
         <local-cache name="triggers"/>
         <local-cache name="data"/>
+        <local-cache name="publish"/>
+        <local-cache name="schema"/>
       </cache-container>
       <cache-container name="hawkular-services" default-cache="backfill" statistics-enabled="true">
         <local-cache name="backfill"/>
-      </cache-container>
-      <cache-container name="hawkular-metrics" default-cache="publish" statistics-enabled="true">
-        <local-cache name="publish"/>
       </cache-container>
     </xsl:copy>
   </xsl:template>

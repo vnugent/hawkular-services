@@ -41,14 +41,14 @@
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-rest-api</artifactId>
       <type>war</type>
-      <version>0.0.15.Final-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-status</artifactId>
       <type>war</type>
-      <version>0.0.15.Final-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -82,13 +82,7 @@
 
     <dependency>
       <groupId>org.hawkular.alerts</groupId>
-      <artifactId>hawkular-alerts-rest</artifactId>
-      <type>war</type>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.alerts</groupId>
-      <artifactId>hawkular-alerts-actions-email</artifactId>
+      <artifactId>hawkular-alerts-actions-email-metrics</artifactId>
       <type>war</type>
     </dependency>
 
@@ -100,8 +94,8 @@
 
     <dependency>
       <groupId>org.hawkular.metrics</groupId>
-      <artifactId>hawkular-metrics-component</artifactId>
-      <type>war</type>
+      <artifactId>hawkular-metrics-component-dist</artifactId>
+      <type>ear</type>
     </dependency>
 
     <dependency>
