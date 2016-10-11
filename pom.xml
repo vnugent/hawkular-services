@@ -28,7 +28,7 @@
 
   <groupId>org.hawkular.services</groupId>
   <artifactId>hawkular-services</artifactId>
-  <version>0.0.16.Final-SNAPSHOT</version>
+  <version>0.0.16.Final</version>
   <packaging>pom</packaging>
 
   <name>Hawkular Services</name>
@@ -60,7 +60,7 @@
     <connection>scm:git:git@github.com:hawkular/hawkular-services.git</connection>
     <developerConnection>scm:git:git@github.com:hawkular/hawkular-services.git</developerConnection>
     <url>https://github.com/hawkular-services</url>
-    <tag>HEAD</tag>
+    <tag>0.0.16.Final</tag>
   </scm>
   <issueManagement>
     <system>jira</system>
