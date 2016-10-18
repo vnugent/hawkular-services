@@ -5,10 +5,6 @@ language: java
 services:
   - docker
 
-env:
-  global:
-    - secure: "WBt8okocJt73D6rEnz0pfAK7Uluy7yDwYdyPs8iweJLxPa5AdKklahkOrnMG06DqRX4l4X1qh82Xe9DeboqfRhLm4zhH1vxX34XjGJ0lKJLameKNlm4i7ZUMK7axoITr+iHFapv6DaHN8OxzXP+aG5oIGqJxg+UIMJYGDOMdHwwRtnP1wNkI8BMhf8f0l5aUXwlW/JpjCmvEv7Vgxkjkp6BOTBbyTpR8mqzwbI4+lKKQxoZ/pPvdALhjxxR5adWWyGei4uR+oXA090pN9L4n1cObQwlzEb19IOxPKhiUOsotdvnGsRulbgmp8ip7J7OGdZTjcekGG+K5zCxgR/Cc9Fz+lfQpcv6/wsngHp/SszUltc79YHY35rhw6MKsxCY4YtTspjdvMOslqeulJAr/8ZmWrqx6TgRNlVHE3fokwdI7rvADzIZ9g1jk5+NWG3s6ifDo14bgrhCRlQWRoeQYuzsCOKzAwZNj5vXbUFaXhnqdqY42mU9X9WVURzH801mr/p5PO0y94i1op7F90HqV8PN2+i1mO1VGPP+IhLA1fSkNt+6h0MIOWRtsW0afiqQyt2ZKDQpOMFbv0nspZJkePPj9pZGpnExjQ7f4hz1Gs5gZF3pzfuJiD6t9xSvxm1HGda64r93+xUI54+SC0WDoNBQ+nEo4Rtik1nBN/s2f7/I="
-
 # manage the caches here https://travis-ci.org/hawkular/hawkular-services/caches
 cache:
   directories:
@@ -22,6 +18,8 @@ notifications:
     channels:
     - chat.freenode.net#hawkular
     on_success: change
+  webhooks:
+    - http://hawkular-bot.herokuapp.com/notifications
 
 install:
 - bash .travis.install.maven.sh "3.3.9" "${HOME}/mvn-home"
@@ -36,7 +34,7 @@ script:
   -vF "[INFO] Downloaded:"; test ${PIPESTATUS[0]} -eq 0
 
 after_success:
-- bash .travis.hawkular-client.ruby.sh
+  - bash .travis.hawkular-client.ruby.sh
 
 before_cache:
 # Clean the cached directories once their size exceeds the space left on the partition.

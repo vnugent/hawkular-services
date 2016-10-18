@@ -22,14 +22,8 @@ if [ "$TRAVIS_PULL_REQUEST" = false ] ; then
     exit
 fi
 
-function post_comment {
-    set +x
-    echo 'Sending comment to github.'
-    curl -s -H "Authorization: token $GITHUB_TOKEN"  \
-    -i "https://api.github.com/repos/$TRAVIS_REPO_SLUG/issues/$TRAVIS_PULL_REQUEST/comments"  \
-    --data  "{\"body\": \"$1\"}" > /dev/null
-    set -x
-}
+# Global env
+export ADMIN_TOKEN=4f4a1434-8cb3-11e6-ae22-56b6b6499611
 
 # Create docker image.
 mvn -s .travis.maven.settings.xml -Pdev,dozip clean install
@@ -52,7 +46,7 @@ SKIP_SECURE_CONTEXT=1 \
 SKIP_V8_METRICS=1 \
 SKIP_SERVICES_METRICS=1 \
 bundle exec rspec && \
-post_comment 'This PR seem to be working well with [hawkular-client-ruby](https://github.com/hawkular/hawkular-client-ruby) :+1:.' ||
-post_comment 'This PR potentially fails with [hawkular-client-ruby](https://github.com/hawkular/hawkular-client-ruby).'
+echo '---Ruby tests succeeded---' ||
+echo '---Ruby tests failed---'
 docker-compose kill
 popd
