@@ -211,7 +211,6 @@ public class BackfillCacheManager implements BackfillCache {
     private Map<CacheKey, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
 
     // Lazy init these when we actually need to do a backfill
-    private InitialContext ctx;
     private Inventory inventory;
     private MetricsService metricsService;
 
@@ -226,12 +225,6 @@ public class BackfillCacheManager implements BackfillCache {
      */
     @Resource(lookup = "java:jboss/infinispan/cache/hawkular-services/backfill")
     private Cache<CacheKey, CacheValue> backfillCache;
-
-    //@Resource(lookup = "java:global/Hawkular/Inventory")
-    //Inventory inventory;
-
-    //@Resource(lookup = "java:global/Hawkular/Metrics")
-    //MetricsService metricsService;
 
     @EJB
     BackfillCache self;
@@ -352,6 +345,12 @@ public class BackfillCacheManager implements BackfillCache {
     @Override
     @Lock(LockType.READ)
     public void forceBackfill(String feedId) {
+        if (!initServices()) {
+            log.warnf("Could not perform backfill, not all services are available. Inventory=%s, Metrics=%s",
+                    inventory, metricsService);
+            return;
+        }
+
         String feedAvailabilityMetricId = FEED_PREFIX + feedId;
 
         if (!isResponsible(feedAvailabilityMetricId)) {
@@ -381,8 +380,6 @@ public class BackfillCacheManager implements BackfillCache {
     }
 
     private void doBackfill(CacheKey key, CacheValue value) {
-        initServices();
-
         // only backfill once, so stop the backfill job
         cancelJob(key);
 
@@ -456,11 +453,10 @@ public class BackfillCacheManager implements BackfillCache {
         });
     }
 
-    private synchronized void initServices() {
+    private synchronized boolean initServices() {
         try {
-            if (ctx == null) {
-                ctx = new InitialContext();
-            }
+            InitialContext ctx = new InitialContext();
+
             if (inventory == null) {
                 inventory = (Inventory) ctx.lookup(INVENTORY_SERVICE);
             }
@@ -470,6 +466,8 @@ public class BackfillCacheManager implements BackfillCache {
         } catch (Exception e) {
             log.errorf("Failed to access JNDI Services: %s", e.getMessage());
         }
+
+        return (!(null == inventory || null == metricsService));
     }
 
     private void cancelJob(CacheKey key) {
@@ -515,6 +513,11 @@ public class BackfillCacheManager implements BackfillCache {
 
             // backfill situation
             log.infof("Feed %s has not reported for %d ms and will be backfilled.", key, quietPeriodMs);
+            if (!initServices()) {
+                log.warnf("Could not perform backfill, not all services are available. Inventory=%s, Metrics=%s",
+                        inventory, metricsService);
+                return;
+            }
             doBackfill(key, value);
         }
 
