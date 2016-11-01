@@ -10,9 +10,6 @@ cache:
   directories:
   - $HOME/.m2/repository
 
-jdk:
-- oraclejdk8
-
 notifications:
   irc:
     channels:
@@ -20,6 +17,11 @@ notifications:
     on_success: change
   webhooks:
     - http://hawkular-bot.herokuapp.com/notifications
+
+addons:
+  apt:
+    packages:
+    - oracle-java8-installer
 
 install:
 - bash .travis.install.maven.sh "3.3.9" "${HOME}/mvn-home"
