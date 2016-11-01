@@ -7,7 +7,7 @@ This module contains the sources to build a Docker container with Hawkular Servi
 Hawkular Services requires a running Cassandra instance with RPC enabled.  If you don't have an existing
 Cassandra instance, you can start one using Docker.
 
-  docker run --name hawkular-cassandra -e CASSANDRA_START_RPC=true -d cassandra:3.7
+  docker run --name hawkular-cassandra -e CASSANDRA_START_RPC=true -d cassandra:3.0.9
 
 This command should return the id of the running container.  You can also verify that it is running
 by using the "docker ps" command.
@@ -29,4 +29,3 @@ By default, this will create a docker image with the name "<username>/hawkular-s
 Next, start up the hawkular services container and point it to the Cassandra instance.
 
   docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra <username>/hawkular-services
-
