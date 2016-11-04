@@ -27,59 +27,112 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="StyleSheet" href="hawkular.css" type="text/css">
     <script>
+        var services = {
+          services: {
+            name: "services",
+            url: "hawkular/status",
+            processResponse: function(response) {
+              this.isReady = true;
+              this.version = response["Implementation-Version"];
+              this.commit = response["Built-From-Git-SHA1"];
+            }
+          },
+          metrics: {
+            name: "metrics",
+            url: "hawkular/metrics/status",
+            processResponse: function(response) {
+              this.isReady = (response.MetricsService == "STARTED");
+              switch(response.MetricsService) {
+                case "STARTING":
+                  this.status = "Starting";
+                  break;
+                case "STOPPED":
+                  this.status = "Stopped";
+                  break;
+                case "FAILED":
+                  this.status = "Failed to start";
+                  break;
+                default:
+                  this.status = response.MetricsService;
+              }
+              this.version = response["Implementation-Version"];
+              this.commit = response["Built-From-Git-SHA1"];
+            }
+          },
+          alerts: {
+            name: "alerts",
+            url: "hawkular/alerts/status",
+            processResponse: function (response) {
+              this.isReady = (response.status == "STARTED");
+              if (response.status == "FAILED") {
+                this.status = "Failed to start";
+              } else {
+                this.status = response.status
+              }
+              this.version = response["Implementation-Version"];
+              this.commit = response["Built-From-Git-SHA1"];
+            }
+          },
+          inventory: {
+            name: "inventory",
+            url: "hawkular/inventory/status",
+            processResponse: function(response) {
+              this.isReady = (response.Initialized == "true");
+              this.status = "Starting";
+              this.version = response["Implementation-Version"];
+              this.commit = response["Built-From-Git-SHA1"];
+            }
+          }
+        };
 
-       function statusRequest(serviceName) {
+       function statusRequest(service) {
          var xmlhttp = new XMLHttpRequest();
          xmlhttp.onreadystatechange = function() {
            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-             var status = JSON.parse(xmlhttp.responseText);
-             setStatus(serviceName, status);
+             service.processResponse(JSON.parse(xmlhttp.responseText))
+             if (service.isReady) {
+               setStatus(service);
+             } else {
+               setUnavailableStatus(service, service.status);
+             }
            }
            else if (xmlhttp.readyState == 4 && xmlhttp.status == 400) {
-             setUnavailableStatus(serviceName, "Internal error, can't determine the status of this service");
+             setUnavailableStatus(service, "Internal error, can't determine the status of this service");
            }
            else if (xmlhttp.readyState == 4 && xmlhttp.status == 404) {
-             setUnavailableStatus(serviceName, "Unavailable or starting");
+             setUnavailableStatus(service, "Unavailable or starting");
            }
            else if (xmlhttp.readyState == 4) {
-             setUnavailableStatus(serviceName, "Unknown, sorry");
+             setUnavailableStatus(service, "Unknown, sorry");
            }
          };
-         var url = "hawkular/" + serviceName + "/status";
-         if (serviceName == "services") {
-             url = "hawkular/status";
-         }
-         xmlhttp.open("GET", url, true);
+         xmlhttp.open("GET", service.url, true);
          xmlhttp.send();
        }
 
-       function resetStatus(serviceName) {
-         document.getElementById(serviceName + "_version").innerHTML = "";
-         document.getElementById(serviceName + "_available").innerHTML = "";
-         document.getElementById(serviceName + "_unavailable").innerHTML = "";
+       function resetStatus(service) {
+         document.getElementById(service.name + "_version").innerHTML = "";
+         document.getElementById(service.name + "_available").innerHTML = "";
+         document.getElementById(service.name + "_unavailable").innerHTML = "";
        }
 
-       function setStatus(serviceName, status) {
-         resetStatus(serviceName);
-         if (serviceName == "services") {
-           var servicesVersion = status["Implementation-Version"] + " (commit " + status["Built-From-Git-SHA1"] + ")";
-           document.getElementById(serviceName + "_version").innerHTML = servicesVersion;
-         } else {
-           document.getElementById(serviceName + "_version").innerHTML = status["Implementation-Version"];
-         }
-         document.getElementById(serviceName + "_available").innerHTML = "Running";
+       function setStatus(service) {
+         resetStatus(service);
+         var serviceVersion = service.version + " (commit " + service.commit + ")";
+         document.getElementById(service.name + "_version").innerHTML = serviceVersion;
+         document.getElementById(service.name + "_available").innerHTML = "Running";
        }
 
-       function setUnavailableStatus(serviceName, error) {
-         resetStatus(serviceName);
-         document.getElementById(serviceName + "_unavailable").innerHTML = error;
+       function setUnavailableStatus(service, error) {
+         resetStatus(service);
+         document.getElementById(service.name + "_unavailable").innerHTML = error;
        }
 
        window.setInterval(function () {
-         statusRequest("services");
-         statusRequest("metrics");
-         statusRequest("alerts");
-         statusRequest("inventory");
+         statusRequest(services.services);
+         statusRequest(services.metrics);
+         statusRequest(services.alerts);
+         statusRequest(services.inventory);
        }, 3000); // repeat forever, polling every 3 seconds
 
     </script>
