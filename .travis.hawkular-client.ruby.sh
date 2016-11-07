@@ -36,7 +36,7 @@ git clone --depth 1 https://github.com/hawkular/hawkular-client-ruby.git
 pushd hawkular-client-ruby
 bundle install
 sed -i "s/  image: .*hawkular-services/  image: \"`whoami`\/hawkular-services/g" docker-compose.yml
-docker-compose up -d && ./.travis/wait_for_services.rb && \
+./.travis/start_hawkular_services.sh && ./.travis/wait_for_services.rb && \
 sleep 20s
 
 RUN_ON_LIVE_SERVER=1 \
