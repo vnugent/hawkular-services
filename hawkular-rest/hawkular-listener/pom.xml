@@ -33,7 +33,7 @@
   <name>Hawkular REST: Listener</name>
 
   <properties>
-    <version.io.reactivex.rxjava>1.0.13</version.io.reactivex.rxjava>
+    <version.io.reactivex.rxjava>1.1.7</version.io.reactivex.rxjava>
   </properties>
 
   <dependencies>
