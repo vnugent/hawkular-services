@@ -9,6 +9,7 @@ services:
 cache:
   directories:
   - $HOME/.m2/repository
+  - $HOME/.m2/wrapper
 
 notifications:
   irc:
@@ -24,15 +25,12 @@ addons:
     - oracle-java8-installer
 
 install:
-- bash .travis.install.maven.sh "3.3.9" "${HOME}/mvn-home"
-- export M2_HOME=${HOME}/mvn-home
-- export PATH=${HOME}/mvn-home/bin:${PATH}
-- mvn -version -B
+- ./mvnw -version -B
 # unshallow is needed by license-maven-plugin
 - git fetch origin --unshallow || true
 
 script:
-- mvn -s .travis.maven.settings.xml verify -Pitest -Dfailsafe.useFile=false | grep -vF "[INFO] Downloading:" | grep
+- ./mvnw -s .travis.maven.settings.xml verify -Pitest -Dfailsafe.useFile=false | grep -vF "[INFO] Downloading:" | grep
   -vF "[INFO] Downloaded:"; test ${PIPESTATUS[0]} -eq 0
 
 after_success:
@@ -42,7 +40,7 @@ before_cache:
 # Clean the cached directories once their size exceeds the space left on the partition.
 # This is important because Travis zips the chached directories to a temporary file on the same partition.
 # Note that while we consider the summed size of all cached dirs, we remove only those ones that tend to grow over time
-- CACHED_DIRECTORIES=("$HOME/.m2/repository")
+- CACHED_DIRECTORIES=("$HOME/.m2/repository" "$HOME/.m2/wrapper")
 - availBytes=$(df -P . | tail -1 | awk '{print $4}')
 - cachedBytes=$(du -cs "${CACHED_DIRECTORIES[@]}" | tail -1 | awk '{print $1}')
 - echo "Checking if the size of directories to cache ${cachedBytes} Bytes exceeds the free space ${availBytes} Bytes left on the current partition"
