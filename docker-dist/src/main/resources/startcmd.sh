@@ -23,6 +23,7 @@ ${AS_ROOT}/bin/standalone.sh -b 0.0.0.0 \
        -Djboss.server.name=${HOSTNAME} \
        -Djboss.server.data.dir=/opt/data/data \
        -Djboss.server.log.dir=/opt/data/log \
+       -Dactivemq.artemis.client.global.thread.pool.max.size=${HAWKULAR_JMS_THREAD_POOL:-30} \
        -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
        -Dhawkular.rest.user=${HAWKULAR_USER} \
        -Dhawkular.rest.password=${HAWKULAR_PASSWORD} \
