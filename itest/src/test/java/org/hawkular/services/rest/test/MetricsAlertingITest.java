@@ -58,7 +58,7 @@ public class MetricsAlertingITest extends AbstractTestBase {
                                 String foundState = metricsStatus.get("MetricsService").asText();
                                 Assert.assertEquals(foundState, expectedState);
                             });
-                }, Retry.times(50).delay(500));
+                }, Retry.times(50).delay(5000));
     }
 
     @Test(groups = { GROUP })
@@ -78,7 +78,7 @@ public class MetricsAlertingITest extends AbstractTestBase {
                                     String foundState = alertingStatus.get("status").asText();
                                     Assert.assertEquals(foundState, expectedState);
                             });
-                }, Retry.times(20).delay(250));
+                }, Retry.times(20).delay(2500));
     }
 
     @Test(dependsOnMethods = { "metricsUp", "alertingUp" }, groups = { GROUP })

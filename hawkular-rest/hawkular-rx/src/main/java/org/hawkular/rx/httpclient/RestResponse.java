@@ -18,7 +18,7 @@ package org.hawkular.rx.httpclient;
 
 import java.io.IOException;
 
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 
 /**
  * @author Jirka Kremser
