@@ -24,7 +24,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.squareup.okhttp.HttpUrl;
+
+import okhttp3.HttpUrl;
 
 /**
  * Hawkular Agent integration tests.

@@ -32,8 +32,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import com.squareup.okhttp.Credentials;
-import com.squareup.okhttp.OkHttpClient;
+
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
 
 /**
  * A base for the integration tests.
@@ -66,10 +67,11 @@ public class AbstractTestBase extends Arquillian {
 
         baseUri = httpScheme + "://" + host + ":" + httpPort;
 
-        client = new OkHttpClient();
-        client.setConnectTimeout(60, TimeUnit.SECONDS);
-        client.setReadTimeout(60, TimeUnit.SECONDS);
-        client.setWriteTimeout(60, TimeUnit.SECONDS);
+        client = new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
 
         mapper = new ObjectMapper();
         AnnotationIntrospector jacksonIntrospector = new JacksonAnnotationIntrospector();
