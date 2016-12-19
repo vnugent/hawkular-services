@@ -26,9 +26,9 @@ fi
 export ADMIN_TOKEN=4f4a1434-8cb3-11e6-ae22-56b6b6499611
 
 # Create docker image.
-mvn -s .travis.maven.settings.xml -Pdev,dozip clean install
+./mvnw -s .travis.maven.settings.xml -Pdev,dozip clean install
 pushd docker-dist
-mvn -s ../.travis.maven.settings.xml docker:build
+../mvnw -s ../.travis.maven.settings.xml docker:build
 popd
 
 # Download hawkular-client-ruby and make it ready.
