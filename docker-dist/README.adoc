@@ -28,4 +28,4 @@ By default, this will create a docker image with the name "<username>/hawkular-s
 
 Next, start up the hawkular services container and point it to the Cassandra instance.
 
-  docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra <username>/hawkular-services
+  docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra -p 8080:8080 <username>/hawkular-services
