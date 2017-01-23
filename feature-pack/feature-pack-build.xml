@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@
 
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-download" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-wildfly-agent-download.war" />
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-wf-extension" to-location="standalone/configuration/hawkular-wildfly-agent-wf-extension.zip" />
+    <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-wf-extension-eap6" to-location="standalone/configuration/hawkular-wildfly-agent-wf-extension-eap6.zip" />
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-installer" to-location="standalone/configuration/hawkular-wildfly-agent-installer.jar" />
 
     <copy-artifact artifact="org.hawkular.alerts:hawkular-alerts-actions-email-metrics" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-alerts-actions-email.war" />
