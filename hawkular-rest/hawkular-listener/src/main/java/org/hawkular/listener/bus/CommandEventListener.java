@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,23 +16,16 @@
  */
 package org.hawkular.listener.bus;
 
-import java.util.Collections;
-import java.util.UUID;
-
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jms.MessageListener;
-import javax.naming.InitialContext;
 
-import org.hawkular.alerts.api.model.event.Event;
-import org.hawkular.alerts.api.services.AlertsService;
 import org.hawkular.bus.common.BasicMessage;
 import org.hawkular.bus.common.consumer.BasicMessageListener;
 import org.hawkular.cmdgw.api.EventDestination;
 import org.hawkular.cmdgw.api.ResourcePathResponse;
-import org.hawkular.inventory.paths.CanonicalPath;
 import org.jboss.logging.Logger;
 
 /**
@@ -50,29 +43,32 @@ import org.jboss.logging.Logger;
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
 public class CommandEventListener extends BasicMessageListener<BasicMessage> {
     private final Logger log = Logger.getLogger(CommandEventListener.class);
-
-    private static final String ALERTS_SERVICE = "java:global/hawkular-metrics/hawkular-alerts/CassAlertsServiceImpl";
-
-    private InitialContext ctx;
-    private AlertsService alerts;
+    private final ListenerUtils utils = new ListenerUtils();
 
     @Override
     protected void onBasicMessage(BasicMessage msg) {
 
         String messageClass = msg.getClass().getSimpleName();
-        log.infof("Received message [%s] with name [%s]", msg, messageClass); //TODO debug
+        log.debugf("Received message [%s] with name [%s]", msg, messageClass); //TODO debug
+
+        String miqEventType = null;
+        String miqResourceType = null;
         switch (messageClass) {
             case "AddDatasourceResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource", "MiddlewareServer");
+                miqEventType = "hawkular_datasource";
+                miqResourceType = "MiddlewareServer";
                 break;
             case "DeployApplicationResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment", "MiddlewareServer");
+                miqEventType = "hawkular_deployment";
+                miqResourceType = "MiddlewareServer";
                 break;
             case "RemoveDatasourceResponse":
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_datasource_remove", "MiddlewareServer");
+                miqEventType = "hawkular_datasource_remove";
+                miqResourceType = "MiddlewareServer";
                 break;
             case "UndeployApplicationResponse": {
-                addEvent((ResourcePathResponse) msg, messageClass, "hawkular_deployment_remove", "MiddlewareServer");
+                miqEventType = "hawkular_deployment_remove";
+                miqResourceType = "MiddlewareServer";
                 break;
             }
             default: {
@@ -82,40 +78,13 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
                 }
             }
         }
-    }
-
-    private void addEvent(ResourcePathResponse response, String category, String miqEventType,
-            String miqResourceType) {
-        try {
-            init();
-
-            String canonicalPathString = response.getResourcePath();
-            CanonicalPath canonicalPath = CanonicalPath.fromString(canonicalPathString);
-            String tenantId = canonicalPath.ids().getTenantId();
-            String eventId = UUID.randomUUID().toString();
-            String status = response.getStatus().name().toLowerCase();
-            Event event = new Event(tenantId, eventId, category, status);
-            event.addContext("resource_path", canonicalPathString);
-            event.addContext("message", response.getMessage());
-            event.addTag("miq.event_type", miqEventType + ("error".equals(status) ? ".error" : ".ok"));
-            event.addTag("miq.resource_type", miqResourceType);
-
-            log.infof("Received message [%s] and forwarding it as [%s]", response, event); //TODO debug
-
-            alerts.addEvents(Collections.singleton(event));
-
-        } catch (Exception e) {
-            log.errorf("Error processing event message [%s]: %s", response.toJSON(), e);
+        if (null != miqEventType) {
+            ResourcePathResponse response = (ResourcePathResponse) msg;
+            String text = response.getStatus().name().toLowerCase();
+            boolean isError = "error".equals(text);
+            utils.addEvent(response.getResourcePath(), messageClass, text,
+                    (miqEventType + (isError ? ".error" : ".ok")), miqResourceType, response.getMessage());
         }
-    }
 
-    private synchronized void init() throws Exception {
-        if (ctx == null) {
-            ctx = new InitialContext();
-        }
-        if (alerts == null) {
-            alerts = (AlertsService) ctx.lookup(ALERTS_SERVICE);
-        }
     }
-
 }
