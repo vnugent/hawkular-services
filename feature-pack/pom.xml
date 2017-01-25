@@ -77,6 +77,12 @@
 
     <dependency>
       <groupId>org.hawkular.agent</groupId>
+      <artifactId>hawkular-wildfly-agent-wf-extension-eap6</artifactId>
+      <type>zip</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.agent</groupId>
       <artifactId>hawkular-wildfly-agent-installer</artifactId>
     </dependency>
 
