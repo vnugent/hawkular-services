@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 package org.hawkular.listener.bus;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jms.MessageListener;
 
+import org.hawkular.inventory.api.Action.Enumerated;
 import org.hawkular.inventory.api.EntityNotFoundException;
 import org.hawkular.inventory.api.Inventory;
 import org.hawkular.inventory.api.RelationAlreadyExistsException;
@@ -54,6 +56,9 @@ import org.jboss.logging.Logger;
  * <p>
  * Listen for Hawkular Inventory events posted to the bus and take necessary actions. Current configured Actions:</p>
  * <p>
+ * <b>Server Create/Remove:</b> Look for resource Creation or Removal events for the various flavors of WildFly.
+ * </p>
+ * <p>
  * <b>Cluster Discovery:</b> Look for "JGroups Channel" Resource Creations or Config changes. If we detect cluster
  * membership then ensure the cluster relationships exists between the servers.
  * </p>
@@ -69,10 +74,20 @@ public class InventoryEventListener extends InventoryEventMessageListener {
     @javax.annotation.Resource(lookup = "java:global/Hawkular/Inventory")
     Inventory inventory;
 
+    private final ListenerUtils utils = new ListenerUtils();
+
+    // For Server Create/Remove
+    private static final Set<String> SERVER_TYPES = new HashSet<>(Arrays.asList(
+            "Domain Host",
+            "Domain WildFly Server",
+            "Domain WildFly Server Controller",
+            "Host Controller",
+            "WildFly Server"));
+
+    // For Cluster Discovery
     private static final String ATTR_GROUP_MEMBERSHIP_VIEW = "Group Membership View";
     private static final String ATTR_NODE_NAME = "Node Name";
     private static final String ATTR_IP_ADDRESS = "IP Address";
-
     private static final String TYPE_JGROUPS_CHANNEL = "JGroups Channel";
     private static final String TYPE_WILDFLY_SERVER = "WildFly Server";
 
@@ -82,7 +97,8 @@ public class InventoryEventListener extends InventoryEventMessageListener {
     protected void onBasicMessage(InventoryEvent<?> event) {
         switch (event.getAction()) {
             case CREATED:
-            case UPDATED: {
+            case UPDATED:
+            case DELETED: {
                 if (event instanceof ResourceEvent) {
                     handleResourceEvent((ResourceEvent) event);
 
@@ -91,30 +107,8 @@ public class InventoryEventListener extends InventoryEventMessageListener {
                 }
                 break;
             }
-            case DELETED:
             default:
                 break; // not interesting
-        }
-    }
-
-    /**
-     * When creating a relevant type generate necessary group trigger. The triggers define out-of-box
-     * events that subsequently get pulled into MIQ.
-     *
-     * @param event Create/Delete event
-     */
-    private void handleResourceTypeEvent(ResourceTypeEvent event) {
-        try {
-            ResourceType rt = event.getObject();
-            String type = rt.getId();
-            switch (type) {
-                default:
-                    log.debugf("Unhandled Type [%s] ", type);
-                    return;
-            }
-
-        } catch (Exception e) {
-            log.errorf("Error processing inventory bus event %s : %s", event, e);
         }
     }
 
@@ -126,22 +120,51 @@ public class InventoryEventListener extends InventoryEventMessageListener {
             tenantId = event.getTenant().getId();
             r = event.getObject();
             type = r.getType().getId();
+            boolean handled = false;
 
-            switch (type) {
-                case TYPE_JGROUPS_CHANNEL: {
-                    log.debugf("Clusterizing on %s of %s", event.getAction(), r.getName());
-                    clusterize(tenantId, r);
-                    break;
-                }
-                default: {
-                    log.debugf("Skipping Type [%s] ", type);
-                    return;
-                }
+            handled |= checkServerEvent(event.getAction(), tenantId, r, type);
+
+            handled |= checkClusterEvent(event.getAction(), tenantId, r, type);
+
+            if (!handled) {
+                log.debugf("Skipping Type [%s] ", type);
             }
         } catch (EntityNotFoundException e) {
             log.errorf("Expected configuration for resourcetype [%s]", type); //TODO debug
         } catch (Exception e) {
             log.errorf("Error processing inventory bus event %s : %s", event, e);
+        }
+    }
+
+    private boolean checkServerEvent(Enumerated action, String tenantId, Resource r, String type) {
+        switch (action) {
+            case CREATED:
+            case DELETED: {
+                if (SERVER_TYPES.contains(type)) {
+                    String message = ((action == Enumerated.CREATED) ? "Added: " : "Removed: ") + type;
+
+                    utils.addEvent(r.getPath(), "Inventory Change", message, "hawkular_event",
+                            "MiddlewareServer", message);
+                    return true;
+                }
+            }
+            default:
+                return false; // not interesting
+        }
+    }
+
+    private boolean checkClusterEvent(Enumerated action, String tenantId, Resource r, String type) {
+        switch (action) {
+            case CREATED:
+            case UPDATED: {
+                if (TYPE_JGROUPS_CHANNEL.equals(type)) {
+                    log.debugf("Clusterizing on %s of %s", action, r.getName());
+                    clusterize(tenantId, r);
+                    return true;
+                }
+            }
+            default:
+                return false; // not interesting
         }
     }
 
@@ -254,6 +277,30 @@ public class InventoryEventListener extends InventoryEventMessageListener {
         }
 
         return mappings;
+    }
+
+    /**
+     * NOT CURRENTLY USED, JUST LEFT AS A FUTURE HOOK.
+     *
+     * When creating a relevant type generate necessary group trigger. The triggers define out-of-box
+     * events that subsequently get pulled into MIQ.
+     *
+     * @param event Create/Delete event
+     */
+    @SuppressWarnings("unused")
+    private void handleResourceTypeEvent(ResourceTypeEvent event) {
+        try {
+            ResourceType rt = event.getObject();
+            String type = rt.getId();
+            switch (type) {
+                default:
+                    log.debugf("Unhandled Type [%s] ", type);
+                    return;
+            }
+
+        } catch (Exception e) {
+            log.errorf("Error processing inventory bus event %s : %s", event, e);
+        }
     }
 
     private boolean isEmpty(String s) {
