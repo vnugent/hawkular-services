@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,8 @@
         <local-cache name="data"/>
         <local-cache name="publish"/>
         <local-cache name="schema"/>
+        <local-cache name="dataIds"/>
+        <local-cache name="globalActions"/>
       </cache-container>
       <cache-container name="hawkular-services" default-cache="backfill" statistics-enabled="true">
         <local-cache name="backfill"/>
