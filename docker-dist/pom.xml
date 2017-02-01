@@ -120,7 +120,7 @@
               <name>${user.name}/hawkular-services</name>
               <build>
                 <from>${docker.base-image}</from>
-                <maintainer>Heiko W. Rupp, hrupp@redhat.com</maintainer>
+                <maintainer>Hawkular Team, hawkular-dev@lists.jboss.org</maintainer>
                 <tags>
                   <tag>${docker.tag.prefix}latest</tag>
                   <tag>${docker.tag.prefix}${docker.tag.version}</tag>
