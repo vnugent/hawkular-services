@@ -37,7 +37,6 @@
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-wf-extension-eap6" to-location="standalone/configuration/hawkular-wildfly-agent-wf-extension-eap6.zip" />
     <copy-artifact artifact="org.hawkular.agent:hawkular-wildfly-agent-installer" to-location="standalone/configuration/hawkular-wildfly-agent-installer.jar" />
 
-    <copy-artifact artifact="org.hawkular.alerts:hawkular-alerts-actions-email-metrics" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-alerts-actions-email.war" />
     <copy-artifact artifact="org.hawkular.inventory:hawkular-inventory-dist" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-inventory-dist.war" />
     <copy-artifact artifact="org.hawkular.metrics:hawkular-metrics-component-dist" to-location="modules/system/layers/hawkular/org/hawkular/nest/main/deployments/hawkular-metrics.ear" />
   </copy-artifacts>

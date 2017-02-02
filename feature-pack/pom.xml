@@ -87,12 +87,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.hawkular.alerts</groupId>
-      <artifactId>hawkular-alerts-actions-email-metrics</artifactId>
-      <type>war</type>
-    </dependency>
-
-    <dependency>
       <groupId>org.hawkular.inventory</groupId>
       <artifactId>hawkular-inventory-feature-pack</artifactId>
       <type>zip</type>
