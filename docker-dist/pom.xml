@@ -32,10 +32,10 @@
   <properties>
     <docker-plugin.project.version>0.15.8</docker-plugin.project.version>
     <docker.base-image>jboss/wildfly:10.0.0.Final</docker.base-image>
-    <docker.as.root>/opt/jboss/wildfly</docker.as.root>
     <docker.tag.prefix />
     <docker.tag.version>${project.version}</docker.tag.version>
     <docker.java.opts>-Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</docker.java.opts>
+    <docker.jboss_home>/opt/jboss/wildfly</docker.jboss_home>
     <plexus-utils.version>3.0.15</plexus-utils.version>
     <alpn-boot.version>8.1.7.v20160121</alpn-boot.version>
     <version.cassandra>3.0.9</version.cassandra>
@@ -140,7 +140,6 @@
                   <HAWKULAR_USER>jdoe</HAWKULAR_USER>
                   <HAWKULAR_PASSWORD>password</HAWKULAR_PASSWORD>
                   <HAWKULAR_AGENT_ENABLE>${hawkular.agent.enabled}</HAWKULAR_AGENT_ENABLE>
-                  <AS_ROOT>${docker.as.root}</AS_ROOT>
                   <JAVA_OPTS>${docker.java.opts}</JAVA_OPTS>
                   <HAWKULAR_METRICS_TTL>${hawkular.metrics.ttl}</HAWKULAR_METRICS_TTL>
                 </env>

@@ -17,8 +17,8 @@
 #
 
 echo ${HOSTNAME} > /etc/machine-id
-${AS_ROOT}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
-${AS_ROOT}/bin/standalone.sh -b 0.0.0.0 \
+${JBOSS_HOME}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
+${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 \
        -bmanagement 0.0.0.0 \
        -Djboss.server.name=${HOSTNAME} \
        -Djboss.server.data.dir=/opt/data/data \
