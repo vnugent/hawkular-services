@@ -28,26 +28,26 @@
       <includes>
         <include>org.mortbay.jetty.alpn:alpn-boot</include>
       </includes>
-      <outputDirectory>/opt/jboss/wildfly/bin</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/bin</outputDirectory>
     </dependencySet>
   </dependencySets>
 
   <fileSets>
     <fileSet>
       <directory>${project.build.directory}/${project.build.finalName}/modules/system/add-ons/hawkular-agent</directory>
-      <outputDirectory>${docker.as.root}/modules/system/add-ons/hawkular-agent</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/modules/system/add-ons/hawkular-agent</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/${project.build.finalName}/modules/system/layers/hawkular</directory>
-      <outputDirectory>${docker.as.root}/modules/system/layers/hawkular</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/modules/system/layers/hawkular</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/${project.build.finalName}/modules/system/layers/base/org/jboss/as/product/hawkular</directory>
-      <outputDirectory>${docker.as.root}/modules/system/layers/base/org/jboss/as/product/hawkular</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/modules/system/layers/base/org/jboss/as/product/hawkular</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/${project.build.finalName}/hawkular-welcome-content</directory>
-      <outputDirectory>${docker.as.root}/hawkular-welcome-content</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/hawkular-welcome-content</outputDirectory>
     </fileSet>
   </fileSets>
 
@@ -59,27 +59,27 @@
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/standalone.xml</source>
-      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-wildfly-agent-installer.jar</source>
-      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-wildfly-agent-wf-extension.zip</source>
-      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-wildfly-agent-wf-extension-eap6.zip</source>
-      <outputDirectory>${docker.as.root}/standalone/configuration</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/modules/layers.conf</source>
-      <outputDirectory>${docker.as.root}/modules/</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/modules/</outputDirectory>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/bin/product.conf</source>
-      <outputDirectory>${docker.as.root}/bin/</outputDirectory>
+      <outputDirectory>${docker.jboss_home}/bin/</outputDirectory>
     </file>
   </files>
 </assembly>
