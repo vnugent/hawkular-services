@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-api-parent</artifactId>
-    <version>0.31.0.Final</version>
+    <version>0.32.0.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>hawkular-rest-api</artifactId>
-  <version>0.31.0.Final</version>
+  <version>0.32.0.Final-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <name>Hawkular REST: REST API Web Application</name>
@@ -47,13 +47,13 @@
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-listener</artifactId>
-      <version>0.31.0.Final</version>
+      <version>0.32.0.Final-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-rx</artifactId>
-      <version>0.31.0.Final</version>
+      <version>0.32.0.Final-SNAPSHOT</version>
     </dependency>
 
     <dependency>
