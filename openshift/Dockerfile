@@ -1,0 +1,3 @@
+FROM cassandra:3.7
+USER cassandra
+EXPOSE 7000 7001 7199 9042 9160

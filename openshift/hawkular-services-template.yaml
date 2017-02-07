@@ -1,0 +1,199 @@
+#
+# Copyright 2017 Red Hat, Inc. and/or its affiliates
+# and other contributors as indicated by the @author tags.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: v1
+kind: Template
+metadata:
+  name: hawkular-services
+  annotations:
+    openshift.io/display-name: Hawkular Services
+    description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawukar Inventory)
+    #iconClass: icon-app-code https://github.com/openshift/openshift-docs/issues/1329
+    iconClass: wildfly
+    tags: hawkular,hawkular-services,metrics,alerts,manageiq,cassandra
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+      service.alpha.openshift.io/dependencies: '[{"name":"hawkular-cassandra","namespace":"","kind":"Service"}]'
+    name: hawkular-services
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: admin
+      port: 9990
+      targetPort: 9990
+    selector:
+      name: hawkular-services
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Cassandra Service
+    name: hawkular-cassandra
+  spec:
+    ports:
+    - name: thrift
+      port: 9160
+      targetPort: 9160
+    - name: cql
+      port: 9042
+      targetPort: 9042
+    selector:
+      name: hawkular-cassandra
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: public
+  spec:
+    to:
+      kind: Service
+      name: hawkular-services
+    port:
+      targetPort: http
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    creationTimestamp: null
+    annotations:
+      description: Defines how to deploy the application server
+    name: hawkular-services
+  spec:
+    replicas: 1
+    selector:
+      name: hawkular-services
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: hawkular-services
+      spec:
+       containers:
+        - image: ${HAWKULAR_SERVICES_IMAGE}
+          env:
+          - name: HAWKULAR_BACKEND
+            value: remote
+          - name: CASSANDRA_NODES
+            value: hawkular-cassandra
+            #value: ${HAWKULAR_CASSANDRA_SERVICE_HOST}
+          #imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          name: hawkular-services
+          ports:
+          - containerPort: 8080
+          #- containerPort: 8443
+          - containerPort: 9990
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 420
+          readinessProbe:
+            httpGet:
+              path: /hawkular/status
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 12
+          resources:
+            requests:
+              memory: 1024Mi
+              cpu: 2000m
+       dnsPolicy: ClusterFirst
+       restartPolicy: Always
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    creationTimestamp: null
+    annotations:
+      description: Defines how to deploy the cassandra
+    name: hawkular-cassandra
+  spec:
+    replicas: 1
+    selector:
+      name: hawkular-cassandra
+    strategy:
+      type: Rolling
+      rollingParams:
+         timeoutSeconds: 480
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: hawkular-cassandra
+      spec:
+       containers:
+        - image: ${CASSANDRA_IMAGE}
+          imagePullPolicy: Always
+          name: hawkular-cassandra
+          volumeMounts:
+          - name: cassandra
+            mountPath: /opt/data
+          ports:
+          - containerPort: 9042
+          - containerPort: 9160
+          env:
+          - name: CASSANDRA_START_RPC
+            value: "true"
+          readinessProbe:
+            exec:
+              command: ['nodetool', 'status']
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ['nodetool', 'status']
+            initialDelaySeconds: 300
+            timeoutSeconds: 10
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits:
+              memory: ${CASSANDRA_MEMORY_LIMIT}
+       volumes:
+       - name: cassandra
+         emptyDir:
+         medium: "Memory"
+parameters:
+- name: HAWKULAR_SERVICES_IMAGE
+  description: What docker image should be used for hawkular-services
+  # value: jkremser/mini-hawkular-services:0.30.0.Final
+  value: pilhuhn/hawkular-services:0.30.0.Final
+- name: CASSANDRA_IMAGE
+  description: What docker image should be used for cassandra node
+  # value: jkremser/cassandra:3.7
+  value: cassandra:3.7
+- name: CASSANDRA_MEMORY_LIMIT
+  description: Maximum amount of memory for Cassandra container
+  displayName: Cassandra Memory Limit
+  value: 2Gi
+labels:
+  template: hawkular-services
+message: Credentials for hawkular-services are jdoe:password.

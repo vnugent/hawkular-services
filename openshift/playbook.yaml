@@ -1,0 +1,69 @@
+#
+# Copyright 2017 Red Hat, Inc. and/or its affiliates
+# and other contributors as indicated by the @author tags.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+- name: Install Hawkular Services into openshift
+  hosts: localhost
+  vars_files:
+    - hawkular-services-ansible-vars.yaml
+  tasks:
+    - name: Flush iptables rules (because of DNS)
+      # become: yes
+      # become_method: sudo
+      shell: "sudo iptables -F"
+      when: "flush_ip_tables"
+
+    - name: Create OpenShift Cluster (this might take a while)
+      shell: "oc cluster up --version={{ openshift_version }} --metrics={{ openshift_use_metrics }}"
+      register: command_result
+      when: "create_openshift_cluster"
+      failed_when: "'OpenShift is already running' not in command_result.stdout and command_result.rc != 0"
+
+    - name: Create a new OpenShift project
+      shell: "oc new-project {{ project_name }}"
+      register: command_result
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+    - name: Log in as system:admin
+      shell: "oc login -u system:admin"
+
+    - name: Do some foobar
+      shell: "oc adm policy add-scc-to-user anyuid -z default"
+
+    - name: Switch to OpenShift project
+      shell: "oc project {{ project_name }}"
+
+    - name: Log in as developer
+      shell: "oc login -u developer -p developer"
+
+    - name: Install Hawkular Services (this might take a while)
+      shell: "oc process -f ./hawkular-services-template.yaml -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }},CASSANDRA_IMAGE={{ cassandra_image }} | oc create -f -"
+      register: command_result
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+    - name: Print out the hawkular-services address
+      shell: "oc get route public | grep public | awk '{print $2}'"
+      register: hawkular_services_address
+
+    - name: Print out the hawkular-services address
+      debug:
+        msg:
+          - "The hostname for the Hawkular Services service is: http://{{ hawkular_services_address.stdout }}"
+          - "Credentials are jdoe:password"
+          - "It may take a minute or two to spin the containers. Especially if it is pulling the images."
