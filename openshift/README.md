@@ -11,3 +11,8 @@ ansible-playbook playbook.yaml --extra-vars "flush_ip_tables=false"
 ```
 
 and run the `sudo iptables -F` on your own.
+
+## Prerequisites
+```
+sudo dnf install -y ansible origin-clients
+```

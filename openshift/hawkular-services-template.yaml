@@ -51,9 +51,6 @@ objects:
     name: hawkular-cassandra
   spec:
     ports:
-    - name: thrift
-      port: 9160
-      targetPort: 9160
     - name: cql
       port: 9042
       targetPort: 9042
@@ -155,9 +152,6 @@ objects:
           ports:
           - containerPort: 9042
           - containerPort: 9160
-          env:
-          - name: CASSANDRA_START_RPC
-            value: "true"
           readinessProbe:
             exec:
               command: ['nodetool', 'status']
