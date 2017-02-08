@@ -16,19 +16,20 @@
 #
 
 ---
-# Define the name of the OpenShift project
 project_name: my-hawkular-services
 
-hawkular_services_image: pilhuhn/hawkular-services:0.30.0.Final
+hawkular_services_image: pilhuhn/hawkular-services:0.31.0.Final
+
+hawkular_services_data_limit: 1Gi
 
 cassandra_image: cassandra:3.7
+
+cassandra_data_limit: 2Gi
 
 flush_ip_tables: true
 
 create_openshift_cluster: true
 
-# try `latest` as well :)
 openshift_version: v1.3.1
 
-# try `true` as well!
 openshift_use_metrics: false

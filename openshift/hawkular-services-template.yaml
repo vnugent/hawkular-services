@@ -22,8 +22,7 @@ metadata:
   annotations:
     openshift.io/display-name: Hawkular Services
     description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawukar Inventory)
-    #iconClass: icon-app-code https://github.com/openshift/openshift-docs/issues/1329
-    iconClass: wildfly
+    iconClass: icon-wildfly
     tags: hawkular,hawkular-services,metrics,alerts,manageiq,cassandra
 objects:
 - apiVersion: v1
@@ -35,14 +34,17 @@ objects:
     name: hawkular-services
   spec:
     ports:
-    - name: http
+    - name: http-8080-tcp
       port: 8080
+      protocol: TCP
       targetPort: 8080
-    - name: admin
+    - name: admin-9990-tcp
       port: 9990
+      protocol: TCP
       targetPort: 9990
     selector:
       name: hawkular-services
+    type: ClusterIP
 - apiVersion: v1
   kind: Service
   metadata:
@@ -51,8 +53,9 @@ objects:
     name: hawkular-cassandra
   spec:
     ports:
-    - name: cql
+    - name: cql-9042-tcp
       port: 9042
+      protocol: TCP
       targetPort: 9042
     selector:
       name: hawkular-cassandra
@@ -65,11 +68,10 @@ objects:
       kind: Service
       name: hawkular-services
     port:
-      targetPort: http
+      targetPort: http-8080-tcp
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    creationTimestamp: null
     annotations:
       description: Defines how to deploy the application server
     name: hawkular-services
@@ -81,24 +83,23 @@ objects:
       type: Recreate
     template:
       metadata:
-        creationTimestamp: null
         labels:
           name: hawkular-services
       spec:
-       containers:
+        containers:
         - image: ${HAWKULAR_SERVICES_IMAGE}
           env:
           - name: HAWKULAR_BACKEND
             value: remote
           - name: CASSANDRA_NODES
             value: hawkular-cassandra
-            #value: ${HAWKULAR_CASSANDRA_SERVICE_HOST}
-          #imagePullPolicy: IfNotPresent
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: hawkular-services
+          volumeMounts:
+          - name: h-services-data
+            mountPath: /opt/data
           ports:
           - containerPort: 8080
-          #- containerPort: 8443
           - containerPort: 9990
           livenessProbe:
             httpGet:
@@ -117,14 +118,15 @@ objects:
             requests:
               memory: 1024Mi
               cpu: 2000m
-       dnsPolicy: ClusterFirst
-       restartPolicy: Always
-    triggers:
-    - type: ConfigChange
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        volumes:
+        - name: h-services-data
+          persistentVolumeClaim:
+            claimName: h-services-pvc
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    creationTimestamp: null
     annotations:
       description: Defines how to deploy the cassandra
     name: hawkular-cassandra
@@ -135,20 +137,19 @@ objects:
     strategy:
       type: Rolling
       rollingParams:
-         timeoutSeconds: 480
+        timeoutSeconds: 480
     template:
       metadata:
-        creationTimestamp: null
         labels:
           name: hawkular-cassandra
       spec:
-       containers:
+        containers:
         - image: ${CASSANDRA_IMAGE}
           imagePullPolicy: Always
           name: hawkular-cassandra
           volumeMounts:
-          - name: cassandra
-            mountPath: /opt/data
+          - name: cassandra-data
+            mountPath: /var/lib/cassandra
           ports:
           - containerPort: 9042
           - containerPort: 9160
@@ -171,23 +172,51 @@ objects:
           resources:
             limits:
               memory: ${CASSANDRA_MEMORY_LIMIT}
-       volumes:
-       - name: cassandra
-         emptyDir:
-         medium: "Memory"
+        volumes:
+        - name: cassandra-data
+          persistentVolumeClaim:
+            claimName: cassandra-pvc
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: h-services-pvc
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: cassandra-pvc
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
   description: What docker image should be used for hawkular-services
-  # value: jkremser/mini-hawkular-services:0.30.0.Final
-  value: pilhuhn/hawkular-services:0.30.0.Final
+  value: pilhuhn/hawkular-services:0.31.0.Final
 - name: CASSANDRA_IMAGE
   description: What docker image should be used for cassandra node
-  # value: jkremser/cassandra:3.7
   value: cassandra:3.7
 - name: CASSANDRA_MEMORY_LIMIT
   description: Maximum amount of memory for Cassandra container
   displayName: Cassandra Memory Limit
   value: 2Gi
+- name: CASSANDRA_DATA_LIMIT
+  description: Maximum amount data used by Cassandra container
+  displayName: Cassandra Container Data Limit
+  value: 2Gi
+- name: HAWKULAR_SERVICES_DATA_LIMIT
+  description: Maximum amount data used by hawkular-services container (mostly logging)
+  displayName: Hawkular Services Container Data Limit
+  value: 1Gi
 labels:
   template: hawkular-services
 message: Credentials for hawkular-services are jdoe:password.

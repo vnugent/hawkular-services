@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Template
+objects:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: h-services-pv
+  spec:
+    capacity:
+      storage: ${HAWKULAR_SERVICES_DATA_LIMIT}
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    hostPath:
+      path: /tmp/pv-services
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: cassandra-pv
+  spec:
+    capacity:
+      storage: ${CASSANDRA_DATA_LIMIT}
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    hostPath:
+      path: /tmp/pv-cassandra
+parameters:
+- name: HAWKULAR_SERVICES_DATA_LIMIT
+  description: Maximum amount data used by hawkular-services container (mostly logging)
+  displayName: Hawkular Services Container Data Limit
+  value: 1Gi
+- name: CASSANDRA_DATA_LIMIT
+  description: Maximum amount data used by Cassandra container
+  displayName: Cassandra Container Data Limit
+  value: 2Gi

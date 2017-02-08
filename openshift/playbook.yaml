@@ -45,6 +45,12 @@
     - name: Do some foobar
       shell: "oc adm policy add-scc-to-user anyuid -z default"
 
+    - name: Add two Persistent Volumes
+      shell: "oc process -f ./pvs.yaml -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }},CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }} | oc create -f -"
+      register: command_result
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
     - name: Switch to OpenShift project
       shell: "oc project {{ project_name }}"
 
