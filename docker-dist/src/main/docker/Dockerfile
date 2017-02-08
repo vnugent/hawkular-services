@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #
 # Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
 # and other contributors as indicated by the @author tags.
@@ -16,14 +15,33 @@
 # limitations under the License.
 #
 
-${JBOSS_HOME}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
-${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 \
-       -bmanagement 0.0.0.0 \
-       -Djboss.server.name=${HOSTNAME} \
-       -Djboss.server.data.dir=/opt/data/data \
-       -Djboss.server.log.dir=/opt/data/log \
-       -Dactivemq.artemis.client.global.thread.pool.max.size=${HAWKULAR_JMS_THREAD_POOL:-30} \
-       -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
-       -Dhawkular.rest.user=${HAWKULAR_USER} \
-       -Dhawkular.rest.password=${HAWKULAR_PASSWORD} \
-       -Dhawkular.metrics.default-ttl=${HAWKULAR_METRICS_TTL:-14}
+FROM jboss/wildfly:10.1.0.Final
+
+MAINTAINER Hawkular Team, hawkular-dev@lists.jboss.org
+
+ARG agent_enable
+ARG metrics_ttl=21
+ARG the_tag
+
+EXPOSE 8080 8443 8787
+VOLUME ["/opt/data"]
+
+COPY maven /
+
+ENV HAWKULAR_BACKEND=cassandra \
+    HAWKULAR_PASSWORD=password \
+    HAWKULAR_AGENT_ENABLE=${agent_enable} \
+    CASSANDRA_NODES=myCassandra \
+    HAWKULAR_USER=jdoe \
+    HAWKULAR_METRICS_TTL=${metrics_ttl}
+
+
+USER root
+RUN chown -R jboss:0 ${JBOSS_HOME}/standalone && \
+    chmod -R ug+rw ${JBOSS_HOME}/standalone && \
+    chown -R jboss:0 ${JBOSS_HOME}/domain && \
+    chmod -R ug+rw ${JBOSS_HOME}/domain
+
+USER jboss
+CMD /opt/hawkular/bin/startcmd.sh
+

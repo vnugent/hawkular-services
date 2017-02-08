@@ -119,33 +119,15 @@
               <alias>hawkular-services</alias>
               <name>${user.name}/hawkular-services</name>
               <build>
-                <from>${docker.base-image}</from>
-                <maintainer>Hawkular Team, hawkular-dev@lists.jboss.org</maintainer>
+                <dockerFile>Dockerfile</dockerFile>
+                <args> <!-- TODO really needed or do we just want to modify the Dockerfile -->
+                  <agent_enable>${hawkular.agent.enabled}</agent_enable>
+                  <metrics_ttl>${hawkular.metrics.ttl}</metrics_ttl>
+                </args>
                 <tags>
                   <tag>${docker.tag.prefix}latest</tag>
                   <tag>${docker.tag.prefix}${docker.tag.version}</tag>
                 </tags>
-                <ports>
-                  <port>8080</port>
-                  <port>8443</port>
-                  <port>8787</port>
-                </ports>
-                <volumes>
-                  <volume>/opt/data</volume>
-                </volumes>
-                <user>root</user>
-                <env>
-                  <HAWKULAR_BACKEND>cassandra</HAWKULAR_BACKEND>
-                  <CASSANDRA_NODES>myCassandra</CASSANDRA_NODES>
-                  <HAWKULAR_USER>jdoe</HAWKULAR_USER>
-                  <HAWKULAR_PASSWORD>password</HAWKULAR_PASSWORD>
-                  <HAWKULAR_AGENT_ENABLE>${hawkular.agent.enabled}</HAWKULAR_AGENT_ENABLE>
-                  <JAVA_OPTS>${docker.java.opts}</JAVA_OPTS>
-                  <HAWKULAR_METRICS_TTL>${hawkular.metrics.ttl}</HAWKULAR_METRICS_TTL>
-                </env>
-                <cmd>
-                  <shell>/opt/hawkular/bin/startcmd.sh</shell>
-                </cmd>
                 <assembly>
                   <basedir>/</basedir>
                   <descriptor>docker-assembly.xml</descriptor>
