@@ -22,6 +22,8 @@ objects:
   kind: PersistentVolume
   metadata:
     name: h-services-pv
+    labels:
+      type: h-services
   spec:
     capacity:
       storage: ${HAWKULAR_SERVICES_DATA_LIMIT}
@@ -34,6 +36,8 @@ objects:
   kind: PersistentVolume
   metadata:
     name: cassandra-pv
+    labels:
+      type: cassandra
   spec:
     capacity:
       storage: ${CASSANDRA_DATA_LIMIT}

@@ -186,6 +186,9 @@ objects:
     resources:
       requests:
         storage: 1Gi
+    selector:
+      matchLabels:
+        type: h-services
 
 - apiVersion: v1
   kind: PersistentVolumeClaim
@@ -197,6 +200,9 @@ objects:
     resources:
       requests:
         storage: 1Gi
+    selector:
+      matchLabels:
+        type: cassandra
 
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
