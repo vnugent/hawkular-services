@@ -27,8 +27,21 @@
       shell: "sudo iptables -F"
       when: "flush_ip_tables"
 
+    - name: "Find out what oc client version we are running (major version)"
+      shell: "oc version | grep oc | cut -f2 -d' ' | head -c 2 | tail -c 1"
+      register: oc_major_version
+
+    - name: "Find out what oc client version we are running (minor version)"
+      shell: "oc version | grep oc | cut -f2 -d' ' | cut -f2 -d'.'"
+      register: oc_minor_version
+
+    - name: "Find out what oc client version we are running"
+      shell: "echo true"
+      when: "oc_major_version.stdout|int <= 1 and oc_minor_version.stdout|int < 5"
+      register: oc_client_before_15
+
     - name: Create OpenShift Cluster (make sure you have the insecure-registry added)
-      shell: "oc cluster up --version={{ openshift_version }} --metrics={{ openshift_use_metrics }}"
+      shell: "oc cluster up --version={{ openshift_cluster_version }} --metrics={{ openshift_use_metrics }}"
       register: command_result
       when: "create_openshift_cluster"
       failed_when: "'OpenShift is already running' not in command_result.stdout and command_result.rc != 0"
@@ -47,9 +60,26 @@
       shell: "oc adm policy add-scc-to-user anyuid -z default"
 #</remove>
 
-    - name: Add two Persistent Volumes
-      shell: "oc process -f ./pvs.yaml -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }},CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }} | oc create -f -"
+      # using the old syntax
+    - name: Add two Persistent Volumes (old api)
+      shell: >
+        oc process -f ./pvs.yaml
+        -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }} CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
+        | oc create -f -
       register: command_result
+      when: oc_client_before_15 is defined and oc_client_before_15.stdout
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+      # using the new syntax
+    - name: Add two Persistent Volumes (new api)
+      shell: >
+        oc process -f ./pvs.yaml
+        --param HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }}
+        --param CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
+        | oc create -f -
+      register: command_result
+      when: oc_client_before_15.stdout is not defined
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
@@ -59,14 +89,32 @@
     - name: Log in as developer
       shell: "oc login -u developer -p developer"
 
-    - name: Install Hawkular Services (this might take a while)
-      shell: "oc process -f ./template-without-pvs.yaml -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }},CASSANDRA_IMAGE={{ cassandra_image }} | oc create -f -"
+      # using the old syntax
+    - name: Install Hawkular Services (old api)
+      shell: >
+        oc process -f ./template-without-pv-definitions.yaml
+        -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }} CASSANDRA_IMAGE={{ cassandra_image }} ROUTE_NAME={{ route_name }}
+        | oc create -f -
       register: command_result
+      when: oc_client_before_15 is defined and oc_client_before_15.stdout
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+      # using the new syntax
+    - name: Install Hawkular Services (new api)
+      shell: >
+        oc process -f ./template-without-pv-definitions.yaml
+        --param HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
+        --param CASSANDRA_IMAGE={{ cassandra_image }}
+        --param ROUTE_NAME={{ route_name }}
+        | oc create -f -
+      register: command_result
+      when: oc_client_before_15.stdout is not defined
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
     - name: Print out the hawkular-services address
-      shell: "oc get route public | grep public | awk '{print $2}'"
+      shell: "oc get route {{ route_name }} | grep {{ route_name }} | awk '{print $2}'"
       register: hawkular_services_address
 
     - name: Print out the hawkular-services address

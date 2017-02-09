@@ -35,6 +35,10 @@ parameters:
   description: Maximum amount of memory for Cassandra container
   displayName: Cassandra Memory Limit
   value: 2Gi
+- name: ROUTE_NAME
+  description: Public route with this name will be created.
+  displayName: Route Name
+  value: hawkular-services
 labels:
   template: hawkular-services
 message: Credentials for hawkular-services are jdoe:password.
@@ -77,7 +81,7 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
-    name: public
+    name: ${ROUTE_NAME}
   spec:
     to:
       kind: Service
@@ -118,18 +122,20 @@ objects:
           - containerPort: 8080
           - containerPort: 9990
           livenessProbe:
-            httpGet:
-              path: /
-              port: 8080
-            initialDelaySeconds: 420
+            exec:
+              command:
+              - /opt/hawkular/bin/ready.sh
+            initialDelaySeconds: 300
+            timeoutSeconds: 3
           readinessProbe:
-            httpGet:
-              path: /hawkular/status
-              port: 8080
-            initialDelaySeconds: 180
+            exec:
+              command:
+              - /opt/hawkular/bin/ready.sh
+            initialDelaySeconds: 120
+            timeoutSeconds: 3
             periodSeconds: 5
             successThreshold: 1
-            failureThreshold: 12
+            failureThreshold: 6
           resources:
             requests:
               memory: 1024Mi
@@ -153,7 +159,7 @@ objects:
     strategy:
       type: Rolling
       rollingParams:
-        timeoutSeconds: 480
+        timeoutSeconds: 300
     template:
       metadata:
         labels:
@@ -172,7 +178,7 @@ objects:
           readinessProbe:
             exec:
               command: ['nodetool', 'status']
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             timeoutSeconds: 10
             periodSeconds: 15
             successThreshold: 1

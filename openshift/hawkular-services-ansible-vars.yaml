@@ -16,9 +16,11 @@
 #
 
 ---
-project_name: my-hawkular-services
+project_name: myproject
 
-hawkular_services_image: hawkular/hawkular-services:0.31.0.Final
+# todo: use other image once it is published
+hawkular_services_image: jkremser/hawkular-services:0.32.0-with-readiness-script
+#hawkular_services_image: hawkular/hawkular-services:0.31.0.Final
 
 hawkular_services_data_limit: 1Gi
 
@@ -26,10 +28,12 @@ cassandra_image: openshift/origin-metrics-cassandra:v1.4.1
 
 cassandra_data_limit: 2Gi
 
+route_name: hawkular-services
+
 flush_ip_tables: true
 
 create_openshift_cluster: true
 
-openshift_version: v1.4.1
+openshift_cluster_version: v1.4.1
 
 openshift_use_metrics: false
