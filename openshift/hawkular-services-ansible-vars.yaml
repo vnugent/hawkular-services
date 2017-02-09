@@ -18,11 +18,11 @@
 ---
 project_name: my-hawkular-services
 
-hawkular_services_image: pilhuhn/hawkular-services:0.31.0.Final
+hawkular_services_image: hawkular/hawkular-services:0.31.0.Final
 
 hawkular_services_data_limit: 1Gi
 
-cassandra_image: cassandra:3.7
+cassandra_image: openshift/origin-metrics-cassandra:v1.4.1
 
 cassandra_data_limit: 2Gi
 
@@ -30,6 +30,6 @@ flush_ip_tables: true
 
 create_openshift_cluster: true
 
-openshift_version: v1.3.1
+openshift_version: v1.4.1
 
 openshift_use_metrics: false

@@ -21,13 +21,13 @@
   vars_files:
     - hawkular-services-ansible-vars.yaml
   tasks:
-    - name: Flush iptables rules (because of DNS)
+    - name: "Flush iptables rules. Because of DNS we need to run: sudo iptables -F"
       # become: yes
       # become_method: sudo
       shell: "sudo iptables -F"
       when: "flush_ip_tables"
 
-    - name: Create OpenShift Cluster (this might take a while)
+    - name: Create OpenShift Cluster (make sure you have the insecure-registry added)
       shell: "oc cluster up --version={{ openshift_version }} --metrics={{ openshift_use_metrics }}"
       register: command_result
       when: "create_openshift_cluster"
@@ -39,11 +39,13 @@
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
+# <remove this once the h-services:0.32.0.Final is out>
     - name: Log in as system:admin
       shell: "oc login -u system:admin"
 
     - name: Do some foobar
       shell: "oc adm policy add-scc-to-user anyuid -z default"
+#</remove>
 
     - name: Add two Persistent Volumes
       shell: "oc process -f ./pvs.yaml -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }},CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }} | oc create -f -"
@@ -58,7 +60,7 @@
       shell: "oc login -u developer -p developer"
 
     - name: Install Hawkular Services (this might take a while)
-      shell: "oc process -f ./hawkular-services-template.yaml -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }},CASSANDRA_IMAGE={{ cassandra_image }} | oc create -f -"
+      shell: "oc process -f ./template-without-pvs.yaml -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }},CASSANDRA_IMAGE={{ cassandra_image }} | oc create -f -"
       register: command_result
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
@@ -73,3 +75,4 @@
           - "The hostname for the Hawkular Services service is: http://{{ hawkular_services_address.stdout }}"
           - "Credentials are jdoe:password"
           - "It may take a minute or two to spin the containers. Especially if it is pulling the images."
+          - "Consider running   watch oc get pod -l name=hawkular-services    ..to find out when it is ready."
