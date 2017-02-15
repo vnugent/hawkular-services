@@ -16,8 +16,7 @@
 # limitations under the License.
 #
 
-# todo: use other image once it is published
-HAWKULAR_SERVICES_IMAGE="jkremser/hawkular-services:0.32.0-with-readiness-script"
+HAWKULAR_SERVICES_IMAGE="hawkular/hawkular-services:0.32.0.Final"
 CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:v1.4.1"
 PROJECT_NAME="ephemeral"
 ROUTE_NAME="hawkular-services"

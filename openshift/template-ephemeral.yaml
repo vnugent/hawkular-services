@@ -27,7 +27,7 @@ metadata:
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
   description: What docker image should be used for hawkular-services
-  value: hawkular/hawkular-services:0.31.0.Final
+  value: hawkular/hawkular-services:0.32.0.Final
 - name: CASSANDRA_IMAGE
   description: What docker image should be used for cassandra node
   value: openshift/origin-metrics-cassandra:v1.4.1
@@ -125,7 +125,7 @@ objects:
             exec:
               command:
               - /opt/hawkular/bin/ready.sh
-            initialDelaySeconds: 300
+            initialDelaySeconds: 180
             timeoutSeconds: 3
           readinessProbe:
             exec:
@@ -135,7 +135,7 @@ objects:
             timeoutSeconds: 3
             periodSeconds: 5
             successThreshold: 1
-            failureThreshold: 6
+            failureThreshold: 12
           resources:
             requests:
               memory: 1024Mi

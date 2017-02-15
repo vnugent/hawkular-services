@@ -18,9 +18,7 @@
 ---
 project_name: myproject
 
-# todo: use other image once it is published
-hawkular_services_image: jkremser/hawkular-services:0.32.0-with-readiness-script
-#hawkular_services_image: hawkular/hawkular-services:0.31.0.Final
+hawkular_services_image: hawkular/hawkular-services:0.32.0.Final
 
 hawkular_services_data_limit: 1Gi
 

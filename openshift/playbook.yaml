@@ -55,9 +55,9 @@
 # <remove this once the h-services:0.32.0.Final is out>
     - name: Log in as system:admin
       shell: "oc login -u system:admin"
-
-    - name: Do some foobar
-      shell: "oc adm policy add-scc-to-user anyuid -z default"
+    #
+    # - name: Do some foobar
+    #   shell: "oc adm policy add-scc-to-user anyuid -z default"
 #</remove>
 
       # using the old syntax

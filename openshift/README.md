@@ -19,6 +19,8 @@ If you want to start Hawkular Services and you don't care about your data, use:
 ./startEphemeral.sh
 ```
 
+If you want to shut it down, just type in `oc cluster down`.
+
 ## Prerequisites
 The ansible and openshift packages should be installed.
 
@@ -33,3 +35,22 @@ Ensure that the Docker daemon is running with the following argument: --insecure
 ... just add the insecure registry entry to the docker deamon configuration and restart the docker:
 
 Edit `/etc/sysconfig/docker` or `/etc/docker/daemon.json` depending on your docker and run `sudo systemctl daemon-reload && sudo systemctl restart docker`.
+
+## Troubleshooring
+
+To see what is happening in the oc cluster, you can do:
+
+```bash
+watch oc get all
+```
+
+Sometimes when the network was broken and flushing the ip tables didn't help, I had to do:
+```bash
+sudo systemctl stop firewalld.service rpcbind.service rpcbind.socket
+```
+
+You can see the hawkular-services logs by
+
+```bash
+oc logs -f `oc get pod -l name=hawkular-services -o custom-columns=:metadata.name`
+```
