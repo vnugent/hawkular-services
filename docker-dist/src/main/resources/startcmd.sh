@@ -19,7 +19,6 @@
 ${JBOSS_HOME}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
 ${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 \
        -bmanagement 0.0.0.0 \
-       -Djboss.server.name=${HOSTNAME} \
        -Djboss.server.data.dir=/opt/data/data \
        -Djboss.server.log.dir=/opt/data/log \
        -Dactivemq.artemis.client.global.thread.pool.max.size=${HAWKULAR_JMS_THREAD_POOL:-30} \
