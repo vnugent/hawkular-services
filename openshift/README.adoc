@@ -1,0 +1,99 @@
+[[hawkular-services-openshift-template]]
+Hawkular Services OpenShift Template
+------------------------------------
+
+Using this template, user should be able to run the Hawkular Services
+in the OpenShift cluster.
+
+To do that, just run:
+
+[source,bash]
+----
+ansible-playbook playbook.yaml
+----
+
+It asks for the root password because it is necessary for flushing the
+ip tables. If you are not comfortable with running it as a root (and too
+lazy to check we are not doing anything bad :), you may want to run:
+
+[source,bash]
+----
+ansible-playbook playbook.yaml --extra-vars "flush_ip_tables=false"
+----
+
+and run the `sudo iptables -F` on your own.
+
+This runs the Hawkular Services and create two persistent volumes, so
+that you do not lose your data when restarting openshift. However, it
+uses the `hostPath` strategy so that the pod uses the fs entry on the
+node it is scheduled on. For more advanced scenario, we suggest using
+NFS persistent volumes or some cloud storage PVs.
+
+If you want to start Hawkular Services and you don’t care about your
+data, use:
+
+[source,bash]
+----
+./startEphemeral.sh
+----
+
+If you want to shut it down, just type in `oc cluster down`.
+
+[[prerequisites]]
+Prerequisites
+~~~~~~~~~~~~~
+
+The ansible and openshift packages should be installed.
+
+....
+sudo dnf install -y ansible origin-clients
+....
+
+If the ansible fails with following error:
+
+....
+Ensure that the Docker daemon is running with the following argument: --insecure-registry 172.30.0.0/16
+....
+
+… just add the insecure registry entry to the docker deamon
+configuration and restart the docker:
+
+Edit `/etc/sysconfig/docker` or `/etc/docker/daemon.json` depending on
+your docker and run
+`sudo systemctl daemon-reload && sudo systemctl restart docker`.
+
+[[troubleshooting]]
+Troubleshooting
+~~~~~~~~~~~~~~~
+
+To see what is happening in the oc cluster, you can do:
+
+[source,bash]
+----
+watch oc get all
+----
+
+Sometimes when the network was broken and flushing the ip tables didn’t
+help, I had to do:
+
+[source,bash]
+----
+sudo systemctl stop firewalld.service rpcbind.service rpcbind.socket
+----
+
+You can see the hawkular-services logs by
+
+[source,bash]
+----
+oc logs -f `oc get pod -l name=hawkular-services -o custom-columns=:metadata.name`
+----
+
+[[additional-info]]
+Additional Information
+~~~~~~~~~~~~~~~~~~~~~~
+The ansible playbook creates two persistent volumes that use the `hostPath` strategy. These PVs are then
+used by the hawkular-services and cassandra containers. Using the hostPath is good for demonstration purposes
+but in production it is not recommended because it uses the filesystem path from the node, but it is not
+guaranteed that the pod will be started on the same node all the time. In one node cluster this is not an issue. If
+you need something more production ready, consult the 
+link:https://kubernetes.io/docs/user-guide/persistent-volumes/#types-of-persistent-volumes[kubernetes documentation].
