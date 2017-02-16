@@ -67,7 +67,7 @@ main(){
     echo "Install the oc client first."
     exit 1
   }
-  prepare_cluster && \
+  prepare_cluster
   instantiate_template && \
   wait_for_it && \
   tell_where_it_is_running
