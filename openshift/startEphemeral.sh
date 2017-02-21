@@ -21,6 +21,9 @@ CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:v1.4.1"
 PROJECT_NAME="ephemeral"
 ROUTE_NAME="hawkular-services"
 OC_CLUSTER_VERSION="v1.4.1"
+TEMPLATE="https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/template-ephemeral.yaml"
+# uncomment this when using the template locally
+#TEMPLATE="./template-ephemeral.yaml"
 
 prepare_cluster(){
   oc cluster up --version=$OC_CLUSTER_VERSION && \
@@ -34,12 +37,12 @@ instantiate_template(){
 
   if [[ $_OC_MAJOR == 1 ]] && [[ $_OC_MINOR -lt 5 ]]; then
     # using the old syntax
-    oc process -f template-ephemeral.yaml \
+    oc process -f $TEMPLATE \
      -v HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE CASSANDRA_IMAGE=$CASSANDRA_IMAGE ROUTE_NAME=$ROUTE_NAME \
       | oc create -f -
   else
     # using the new syntax
-    oc process -f template-ephemeral.yaml --param HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE \
+    oc process -f $TEMPLATE --param HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE \
                                           --param CASSANDRA_IMAGE=$CASSANDRA_IMAGE \
                                           --param ROUTE_NAME=$ROUTE_NAME | oc create -f -
   fi
