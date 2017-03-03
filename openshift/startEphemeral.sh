@@ -21,7 +21,7 @@ CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:v1.4.1"
 PROJECT_NAME="ephemeral"
 ROUTE_NAME="hawkular-services"
 OC_CLUSTER_VERSION="v1.4.1"
-TEMPLATE="https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/template-ephemeral.yaml"
+TEMPLATE="https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/hawkular-services-ephemeral.yaml"
 # uncomment this when using the template locally
 #TEMPLATE="./template-ephemeral.yaml"
 

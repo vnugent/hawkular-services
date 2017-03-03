@@ -92,7 +92,7 @@
       # using the old syntax
     - name: Install Hawkular Services (old api)
       shell: >
-        oc process -f ./template-without-pv-definitions.yaml
+        oc process -f ./hawkular-services-persistent.yaml
         -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }} CASSANDRA_IMAGE={{ cassandra_image }} ROUTE_NAME={{ route_name }}
         | oc create -f -
       register: command_result
@@ -103,7 +103,7 @@
       # using the new syntax
     - name: Install Hawkular Services (new api)
       shell: >
-        oc process -f ./template-without-pv-definitions.yaml
+        oc process -f ./hawkular-services-persistent.yaml
         --param HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
         --param CASSANDRA_IMAGE={{ cassandra_image }}
         --param ROUTE_NAME={{ route_name }}
