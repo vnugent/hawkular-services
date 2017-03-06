@@ -18,7 +18,7 @@
 ---
 project_name: myproject
 
-hawkular_services_image: hawkular/hawkular-services:0.32.0.Final
+hawkular_services_image: hawkular/hawkular-services:0.33.0.Final
 
 hawkular_services_data_limit: 1Gi
 
