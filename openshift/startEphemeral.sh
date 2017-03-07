@@ -16,14 +16,27 @@
 # limitations under the License.
 #
 
-HAWKULAR_SERVICES_IMAGE="hawkular/hawkular-services:0.33.0.Final"
-CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:v1.4.1"
-PROJECT_NAME="ephemeral"
-ROUTE_NAME="hawkular-services"
-OC_CLUSTER_VERSION="v1.4.1"
-TEMPLATE="https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/hawkular-services-ephemeral.yaml"
-# uncomment this when using the template locally
-#TEMPLATE="./template-ephemeral.yaml"
+PREPARE_CLUSTER="${PREPARE_CLUSTER:true}"
+OC_CLUSTER_VERSION="${OC_CLUSTER_VERSION:-v1.4.1}"
+HAWKULAR_SERVICES_IMAGE="${HAWKULAR_SERVICES_IMAGE:-hawkular/hawkular-services:0.32.0.Final}"
+CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:${OC_CLUSTER_VERSION}"
+PROJECT_NAME="${PROJECT_NAME:-ephemeral}"
+ROUTE_NAME="${ROUTE_NAME:-hawkular-services}"
+ROUTE_HOSTNAME="${ROUTE_HOSTNAME:-${1}}"
+TEMPLATE="${TEMPLATE:-https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/hawkular-services-ephemeral.yaml}"
+
+echo_vars(){
+  echo -e "Starting ephemeral Hawkular Services with following settings:\n"
+  echo "PREPARE_CLUSTER=$PREPARE_CLUSTER"
+  echo "OC_CLUSTER_VERSION=$OC_CLUSTER_VERSION"
+  echo "HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE"
+  echo "CASSANDRA_IMAGE=$CASSANDRA_IMAGE"
+  echo "PROJECT_NAME=$PROJECT_NAME"
+  echo "ROUTE_NAME=$ROUTE_NAME"
+  echo "ROUTE_HOSTNAME=$ROUTE_HOSTNAME"
+  echo "TEMPLATE=$TEMPLATE"
+  echo -e "OC_CLUSTER_VERSION=$OC_CLUSTER_VERSION\n\n"
+}
 
 prepare_cluster(){
   oc cluster up --version=$OC_CLUSTER_VERSION && \
@@ -37,14 +50,16 @@ instantiate_template(){
 
   if [[ $_OC_MAJOR == 1 ]] && [[ $_OC_MINOR -lt 5 ]]; then
     # using the old syntax
-    oc process -f $TEMPLATE \
-     -v HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE CASSANDRA_IMAGE=$CASSANDRA_IMAGE ROUTE_NAME=$ROUTE_NAME \
-      | oc create -f -
+    oc process -f $TEMPLATE -v HAWKULAR_SERVICES_IMAGE="$HAWKULAR_SERVICES_IMAGE" \
+                               CASSANDRA_IMAGE="$CASSANDRA_IMAGE" \
+                               ROUTE_HOSTNAME="$ROUTE_HOSTNAME" \
+                               ROUTE_NAME="$ROUTE_NAME" | oc create -f -
   else
     # using the new syntax
-    oc process -f $TEMPLATE --param HAWKULAR_SERVICES_IMAGE=$HAWKULAR_SERVICES_IMAGE \
-                                          --param CASSANDRA_IMAGE=$CASSANDRA_IMAGE \
-                                          --param ROUTE_NAME=$ROUTE_NAME | oc create -f -
+    oc process -f $TEMPLATE --param HAWKULAR_SERVICES_IMAGE="$HAWKULAR_SERVICES_IMAGE" \
+                            --param CASSANDRA_IMAGE="$CASSANDRA_IMAGE" \
+                            --param ROUTE_HOSTNAME="$ROUTE_HOSTNAME" \
+                            --param ROUTE_NAME="$ROUTE_NAME" | oc create -f -
   fi
 }
 
@@ -61,7 +76,7 @@ wait_for_it(){
 }
 
 tell_where_it_is_running(){
-  URL=`oc get route $ROUTE_NAME | grep $ROUTE_NAME | awk '{print $2}'` && \
+  URL=`oc get route $ROUTE_NAME | grep "$ROUTE_NAME" | awk '{print $2}'` && \
   echo -e "\n\nYour Hawkular Services instance is prepared on $(tput setaf 2)http://$URL $(tput sgr0) \n"
 }
 
@@ -70,7 +85,12 @@ main(){
     echo "Install the oc client first."
     exit 1
   }
-  prepare_cluster
+
+  echo_vars
+  if [ "$PREPARE_CLUSTER" = true ] ; then
+      prepare_cluster
+  fi
+
   instantiate_template && \
   wait_for_it && \
   tell_where_it_is_running

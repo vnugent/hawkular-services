@@ -52,43 +52,6 @@
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
-# <remove this once the h-services:0.32.0.Final is out>
-    - name: Log in as system:admin
-      shell: "oc login -u system:admin"
-    #
-    # - name: Do some foobar
-    #   shell: "oc adm policy add-scc-to-user anyuid -z default"
-#</remove>
-
-      # using the old syntax
-    - name: Add two Persistent Volumes (old api)
-      shell: >
-        oc process -f ./pvs.yaml
-        -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }} CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
-        | oc create -f -
-      register: command_result
-      when: oc_client_before_15 is defined and oc_client_before_15.stdout
-      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
-      changed_when: "'exists' not in command_result.stderr"
-
-      # using the new syntax
-    - name: Add two Persistent Volumes (new api)
-      shell: >
-        oc process -f ./pvs.yaml
-        --param HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }}
-        --param CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
-        | oc create -f -
-      register: command_result
-      when: oc_client_before_15.stdout is not defined
-      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
-      changed_when: "'exists' not in command_result.stderr"
-
-    - name: Switch to OpenShift project
-      shell: "oc project {{ project_name }}"
-
-    - name: Log in as developer
-      shell: "oc login -u developer -p developer"
-
       # using the old syntax
     - name: Install Hawkular Services (old api)
       shell: >
