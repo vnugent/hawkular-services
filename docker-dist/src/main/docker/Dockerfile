@@ -24,7 +24,6 @@ ARG metrics_ttl=21
 ARG the_tag
 
 EXPOSE 8080 8443 8787
-VOLUME ["/opt/data"]
 
 COPY maven /
 
@@ -37,10 +36,11 @@ ENV HAWKULAR_BACKEND=cassandra \
 
 
 USER root
-RUN chown -R jboss:0 ${JBOSS_HOME}/standalone && \
-    chmod -R ug+rw ${JBOSS_HOME}/standalone && \
-    chown -R jboss:0 ${JBOSS_HOME}/domain && \
-    chmod -R ug+rw ${JBOSS_HOME}/domain
+RUN mkdir -p /opt/data && \
+    chown -R jboss:jboss ${JBOSS_HOME}/{standalone,domain} /opt/data && \
+    chmod -R ugo+rw ${JBOSS_HOME}/{standalone,domain} /opt/data
+
+VOLUME ["/opt/data"]
 
 USER jboss
 CMD /opt/hawkular/bin/startcmd.sh

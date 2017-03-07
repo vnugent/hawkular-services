@@ -19,8 +19,8 @@
 ${JBOSS_HOME}/bin/add-user.sh -a -u ${HAWKULAR_USER} -p ${HAWKULAR_PASSWORD} -g read-write,read-only
 ${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 \
        -bmanagement 0.0.0.0 \
-       -Djboss.server.data.dir=/opt/data/data \
-       -Djboss.server.log.dir=/opt/data/log \
+       -Djboss.server.data.dir=${HAWKULAR_DATA:-/opt/data}/data \
+       -Djboss.server.log.dir=${HAWKULAR_DATA:-/opt/data}/log \
        -Dactivemq.artemis.client.global.thread.pool.max.size=${HAWKULAR_JMS_THREAD_POOL:-30} \
        -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
        -Dhawkular.rest.user=${HAWKULAR_USER} \
