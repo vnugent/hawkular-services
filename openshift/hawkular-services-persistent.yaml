@@ -24,12 +24,15 @@ metadata:
     description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawukar Inventory).
     iconClass: icon-wildfly
     tags: hawkular,hawkular-services,metrics,alerts,manageiq,cassandra
+
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
   description: What docker image should be used for hawkular-services.
+  displayName: Hawkular Services Docker Image
   value: hawkular/hawkular-services:0.32.0.Final
 - name: CASSANDRA_IMAGE
   description: What docker image should be used for cassandra node.
+  displayName: Cassandra Docker Image
   value: openshift/origin-metrics-cassandra:v1.4.1
 - name: CASSANDRA_MEMORY_LIMIT
   description: Maximum amount of memory for Cassandra container.
@@ -112,7 +115,7 @@ objects:
     selector:
       name: hawkular-services
     strategy:
-      type: Recreate
+      type: Rolling
     template:
       metadata:
         labels:
@@ -170,7 +173,7 @@ objects:
     selector:
       name: hawkular-cassandra
     strategy:
-      type: Rolling
+      type: Recreate
       rollingParams:
         timeoutSeconds: 300
     template:

@@ -18,6 +18,10 @@
 ---
 project_name: myproject
 
+# put here your publicly available ip addresss or hostname if you want to expose it
+# if left blank, it will be defaulted
+route_hostname: ""
+
 hawkular_services_image: hawkular/hawkular-services:0.33.0.Final
 
 hawkular_services_data_limit: 1Gi

@@ -52,11 +52,43 @@
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
+    - name: Log in as system:admin
+      shell: "oc login -u system:admin"
+
+      # using the old syntax
+    - name: Add two Persistent Volumes (old api)
+      shell: >
+        oc process -f ./pvs.yaml
+        -v HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }} CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
+        | oc create -f -
+      register: command_result
+      when: oc_client_before_15 is defined and oc_client_before_15.stdout
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+      # using the new syntax
+    - name: Add two Persistent Volumes (new api)
+      shell: >
+        oc process -f ./pvs.yaml
+        --param HAWKULAR_SERVICES_DATA_LIMIT={{ hawkular_services_data_limit }}
+        --param CASSANDRA_DATA_LIMIT={{ cassandra_data_limit }}
+        | oc create -f -
+      register: command_result
+      when: oc_client_before_15.stdout is not defined
+      failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
+      changed_when: "'exists' not in command_result.stderr"
+
+    - name: Log in as developer
+      shell: "oc login -u developer -p developer"
+
       # using the old syntax
     - name: Install Hawkular Services (old api)
       shell: >
         oc process -f ./hawkular-services-persistent.yaml
-        -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }} CASSANDRA_IMAGE={{ cassandra_image }} ROUTE_NAME={{ route_name }}
+        -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
+           CASSANDRA_IMAGE={{ cassandra_image }}
+           ROUTE_HOSTNAME={{ route_hostname }}
+           ROUTE_NAME={{ route_name }}
         | oc create -f -
       register: command_result
       when: oc_client_before_15 is defined and oc_client_before_15.stdout
@@ -69,6 +101,7 @@
         oc process -f ./hawkular-services-persistent.yaml
         --param HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
         --param CASSANDRA_IMAGE={{ cassandra_image }}
+        --param ROUTE_HOSTNAME= {{ route_hostname }}
         --param ROUTE_NAME={{ route_name }}
         | oc create -f -
       register: command_result
