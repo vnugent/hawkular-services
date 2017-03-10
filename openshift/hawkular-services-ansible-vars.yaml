@@ -18,6 +18,8 @@
 ---
 project_name: myproject
 
+openshift_cluster_version: v1.4.1
+
 # put here your publicly available ip addresss or hostname if you want to expose it
 # if left blank, it will be defaulted
 route_hostname: ""
@@ -26,7 +28,7 @@ hawkular_services_image: hawkular/hawkular-services:0.33.0.Final
 
 hawkular_services_data_limit: 1Gi
 
-cassandra_image: openshift/origin-metrics-cassandra:v1.4.1
+cassandra_image: openshift/origin-metrics-cassandra:{{openshift_cluster_version}}
 
 cassandra_data_limit: 2Gi
 
@@ -35,7 +37,5 @@ route_name: hawkular-services
 flush_ip_tables: true
 
 create_openshift_cluster: true
-
-openshift_cluster_version: v1.4.1
 
 openshift_use_metrics: false

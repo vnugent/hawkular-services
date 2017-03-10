@@ -21,7 +21,7 @@ metadata:
   name: hawkular-services
   annotations:
     openshift.io/display-name: Hawkular Services
-    description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawukar Inventory).
+    description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawkukar Inventory).
     iconClass: icon-wildfly
     tags: hawkular,hawkular-services,metrics,alerts,manageiq,cassandra
 
@@ -29,7 +29,7 @@ parameters:
 - name: HAWKULAR_SERVICES_IMAGE
   description: What docker image should be used for hawkular-services.
   displayName: Hawkular Services Docker Image
-  value: hawkular/hawkular-services:0.32.0.Final
+  value: hawkular/hawkular-services:0.33.0.Final
 - name: CASSANDRA_IMAGE
   description: What docker image should be used for cassandra node.
   displayName: Cassandra Docker Image

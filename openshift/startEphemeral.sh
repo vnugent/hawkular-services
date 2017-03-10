@@ -16,14 +16,15 @@
 # limitations under the License.
 #
 
-PREPARE_CLUSTER="${PREPARE_CLUSTER:true}"
+PREPARE_CLUSTER="${PREPARE_CLUSTER:-true}"
 OC_CLUSTER_VERSION="${OC_CLUSTER_VERSION:-v1.4.1}"
-HAWKULAR_SERVICES_IMAGE="${HAWKULAR_SERVICES_IMAGE:-hawkular/hawkular-services:0.32.0.Final}"
+HAWKULAR_SERVICES_IMAGE="${HAWKULAR_SERVICES_IMAGE:-hawkular/hawkular-services:0.33.0.Final}"
 CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:${OC_CLUSTER_VERSION}"
 PROJECT_NAME="${PROJECT_NAME:-ephemeral}"
 ROUTE_NAME="${ROUTE_NAME:-hawkular-services}"
 ROUTE_HOSTNAME="${ROUTE_HOSTNAME:-${1}}"
 TEMPLATE="${TEMPLATE:-https://raw.githubusercontent.com/hawkular/hawkular-services/master/openshift/hawkular-services-ephemeral.yaml}"
+FLUSH_IP_TABLES="${FLUSH_IP_TABLES:-true}"
 
 echo_vars(){
   echo -e "Starting ephemeral Hawkular Services with following settings:\n"
@@ -35,7 +36,7 @@ echo_vars(){
   echo "ROUTE_NAME=$ROUTE_NAME"
   echo "ROUTE_HOSTNAME=$ROUTE_HOSTNAME"
   echo "TEMPLATE=$TEMPLATE"
-  echo -e "OC_CLUSTER_VERSION=$OC_CLUSTER_VERSION\n\n"
+  echo -e "FLUSH_IP_TABLES=$FLUSH_IP_TABLES\n\n"
 }
 
 prepare_cluster(){
@@ -64,19 +65,22 @@ instantiate_template(){
 }
 
 wait_for_it(){
+  local _SLEEP_SEC="4"
   printf "\n\n\nLet's wait for the route to become accessible, \nthis may take couple of minutes - "
-  sleep 15
+  sleep $[$_SLEEP_SEC * 4]
   printf "$(tput setaf 6)◖$(tput sgr0)"
-  sleep 8
-  while oc get pod -l name=$ROUTE_NAME -o json | grep "\"ready\": false" > /dev/null; do
+  sleep $[$_SLEEP_SEC * 2]
+
+  # wait until the pod is ready
+  until [ "true" = "`oc get pod -l name=$ROUTE_NAME -o json 2> /dev/null | grep \"\\\"ready\\\": \" | sed -e 's;.*\(true\|false\),;\1;'`" ]; do
     printf "$(tput setaf 6)▮$(tput sgr0)"
-    sleep 4
+    sleep $_SLEEP_SEC
   done
   printf "$(tput setaf 6)◗$(tput sgr0) it's there!"
 }
 
 tell_where_it_is_running(){
-  URL=`oc get route $ROUTE_NAME | grep "$ROUTE_NAME" | awk '{print $2}'` && \
+  URL=`oc get route $ROUTE_NAME 2> /dev/null | grep "$ROUTE_NAME" | awk '{print $2}'` && \
   echo -e "\n\nYour Hawkular Services instance is prepared on $(tput setaf 2)http://$URL $(tput sgr0) \n"
 }
 
@@ -87,8 +91,15 @@ main(){
   }
 
   echo_vars
+
+  if [ "$FLUSH_IP_TABLES" = true ] ; then
+    set -x
+    sudo iptables -F
+    set +x
+  fi
+
   if [ "$PREPARE_CLUSTER" = true ] ; then
-      prepare_cluster
+    prepare_cluster
   fi
 
   instantiate_template && \
