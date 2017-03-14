@@ -21,35 +21,30 @@ metadata:
   name: hawkular-services
   annotations:
     openshift.io/display-name: Hawkular Services
-    description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawukar Inventory)
+    description: Hawkular-Services all-in-one (including Hawkular Metrics, Hawkular Alerts and Hawkular Inventory).
     iconClass: icon-wildfly
     tags: hawkular,hawkular-services,metrics,alerts,manageiq,cassandra
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
-  description: What docker image should be used for hawkular-services
-  value: hawkular/hawkular-services:0.32.0.Final
+  description: What docker image should be used for hawkular-services.
+  value: hawkular/hawkular-services:0.33.0.Final
 - name: CASSANDRA_IMAGE
-  description: What docker image should be used for cassandra node
+  description: What docker image should be used for cassandra node.
   value: openshift/origin-metrics-cassandra:v1.4.1
 - name: CASSANDRA_MEMORY_LIMIT
-  description: Maximum amount of memory for Cassandra container
+  description: Maximum amount of memory for Cassandra container.
   displayName: Cassandra Memory Limit
   value: 2Gi
-- name: CASSANDRA_DATA_LIMIT
-  description: Maximum amount data used by Cassandra container
-  displayName: Cassandra Container Data Limit
-  value: 2Gi
-- name: HAWKULAR_SERVICES_DATA_LIMIT
-  description: Maximum amount data used by hawkular-services container (mostly logging)
-  displayName: Hawkular Services Container Data Limit
-  value: 1Gi
 - name: ROUTE_NAME
   description: Public route with this name will be created.
   displayName: Route Name
   value: hawkular-services
+- name: ROUTE_HOSTNAME
+  description: Under this hostname the Hawkular Services will be accessible, if left blank a value will be defaulted.
+  displayName: Hostname
 labels:
   template: hawkular-services
-message: Credentials for hawkular-services are jdoe:password.
+message: Credentials for hawkular-services are jdoe:password
 
 objects:
 - apiVersion: v1
@@ -91,6 +86,7 @@ objects:
   metadata:
     name: ${ROUTE_NAME}
   spec:
+    host: ${ROUTE_HOSTNAME}
     to:
       kind: Service
       name: hawkular-services
@@ -113,21 +109,6 @@ objects:
       metadata:
         labels:
           name: hawkular-services
-        annotations:
-          pod.alpha.kubernetes.io/init-containers: '[
-            {
-              "name": "hawkular-services-init",
-              "image": "busybox",
-              "imagePullPolicy": "IfNotPresent",
-              "command": ["sh", "-c", "mkdir -p /opt/data && chmod -R go+rw /opt/data"],
-              "volumeMounts": [
-                  {
-                    "name": "h-services-data",
-                    "mountPath": "/opt/data"
-                  }
-              ]
-            }
-          ]'
       spec:
         containers:
         - image: ${HAWKULAR_SERVICES_IMAGE}
@@ -167,8 +148,7 @@ objects:
         restartPolicy: Always
         volumes:
         - name: h-services-data
-          persistentVolumeClaim:
-            claimName: h-services-pvc
+          emptyDir: {}
 
 - apiVersion: v1
   kind: DeploymentConfig
@@ -188,29 +168,11 @@ objects:
       metadata:
         labels:
           name: hawkular-cassandra
-        annotations:
-          pod.alpha.kubernetes.io/init-containers: '[
-            {
-              "name": "cassandra-init",
-              "image": "busybox",
-              "imagePullPolicy": "IfNotPresent",
-              "command": ["sh", "-c", "mkdir -p /var/lib/cassandra && chmod -R go+rw /var/lib/cassandra"],
-              "volumeMounts": [
-                  {
-                    "name": "cassandra-data",
-                    "mountPath": "/var/lib/cassandra"
-                  }
-              ]
-            }
-          ]'
       spec:
         containers:
         - image: ${CASSANDRA_IMAGE}
           imagePullPolicy: Always
           name: hawkular-cassandra
-          env:
-          - name: DATA_VOLUME
-            value: /var/lib/cassandra
           volumeMounts:
           - name: cassandra-data
             mountPath: /var/lib/cassandra
@@ -238,32 +200,4 @@ objects:
               memory: ${CASSANDRA_MEMORY_LIMIT}
         volumes:
         - name: cassandra-data
-          persistentVolumeClaim:
-            claimName: cassandra-pvc
-
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: h-services-pvc
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-    # selector:
-    #   matchLabels:
-    #     type: h-services
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: cassandra-pvc
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-    # selector:
-    #   matchLabels:
-    #     type: cassandra
+          emptyDir: {}

@@ -9,25 +9,14 @@ To do that, just run:
 
 [source,bash]
 ----
-ansible-playbook playbook.yaml
+ansible-playbook playbook.yaml --ask-sudo-pass
 ----
 
-It asks for the root password because it is necessary for flushing the
-ip tables. If you are not comfortable with running it as a root (and too
-lazy to check we are not doing anything bad :), you may want to run:
-
-[source,bash]
-----
-ansible-playbook playbook.yaml --extra-vars "flush_ip_tables=false"
-----
-
-and run the `sudo iptables -F` on your own.
+NOTE: It asks for the root password because it is necessary for flushing the
+      ip tables and creating the directories for persistent volumes.
 
 This runs the Hawkular Services and create two persistent volumes, so
-that you do not lose your data when restarting openshift. However, it
-uses the `hostPath` strategy so that the pod uses the fs entry on the
-node it is scheduled on. For more advanced scenario, we suggest using
-NFS persistent volumes or some cloud storage PVs.
+that you do not lose your data when restarting openshift.
 
 If you want to start Hawkular Services and you don’t care about your
 data, use:
@@ -39,15 +28,24 @@ data, use:
 
 If you want to shut it down, just type in `oc cluster down`.
 
+TIP: The behavior of the `startEphemeral.sh` script can be customized by environment variables.
+     E.g.: `HAWKULAR_SERVICES_IMAGE="hawkular/hawkular-services:x.y.z.Final" ./startEphemeral.sh`
+
 [[prerequisites]]
 Prerequisites
 ~~~~~~~~~~~~~
 
-The ansible and openshift packages should be installed.
+The `ansible`, `origin-clients`, `python2-dnf` and `libselinux-python` packages should be installed.
 
 ....
-sudo dnf install -y ansible origin-clients
+sudo dnf install -y ansible python2-dnf libselinux-python origin-clients
 ....
+
+In fact the ansible playbook ensures the `origin-clients` and
+`libselinux-python` packages are installed and if not, it installs them. To be able to do
+that it itself requires a package called `python2-dnf` on Fedora (it may be different on other platform).
+So technically the minimal requirement is only `ansible` and `python2-dnf` packages and the rest
+can be installed by ansible playbook.
 
 If the ansible fails with following error:
 
@@ -95,5 +93,5 @@ The ansible playbook creates two persistent volumes that use the `hostPath` stra
 used by the hawkular-services and cassandra containers. Using the hostPath is good for demonstration purposes
 but in production it is not recommended because it uses the filesystem path from the node, but it is not
 guaranteed that the pod will be started on the same node all the time. In one node cluster this is not an issue. If
-you need something more production ready, consult the 
+you need something more production ready, consult the
 link:https://kubernetes.io/docs/user-guide/persistent-volumes/#types-of-persistent-volumes[kubernetes documentation].
