@@ -53,9 +53,19 @@ parameters:
 - name: ROUTE_HOSTNAME
   description: Under this hostname the Hawkular Services will be accessible, if left blank a value will be defaulted.
   displayName: Hostname
+- name: HAWKULAR_USER
+  description: Username that is used for accessing the Hawkular Services, if left blank a value will be generated.
+  displayName: Hawkular User
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+- name: HAWKULAR_PASSWORD
+  description: Password that is used for accessing the Hawkular Services, if left blank a value will be generated.
+  displayName: Hawkular Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
 labels:
   template: hawkular-services
-message: Credentials for hawkular-services are jdoe:password
+message: Credentials for hawkular-services are ${HAWKULAR_USER}:${HAWKULAR_PASSWORD}
 
 objects:
 - apiVersion: v1
@@ -128,6 +138,10 @@ objects:
             value: remote
           - name: CASSANDRA_NODES
             value: hawkular-cassandra
+          - name: HAWKULAR_USER
+            value: ${HAWKULAR_USER}
+          - name: HAWKULAR_PASSWORD
+            value: ${HAWKULAR_PASSWORD}
           imagePullPolicy: IfNotPresent
           name: hawkular-services
           volumeMounts:

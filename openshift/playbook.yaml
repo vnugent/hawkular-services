@@ -124,6 +124,8 @@
         -v HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
         CASSANDRA_IMAGE={{ cassandra_image }}
         ROUTE_HOSTNAME={{ route_hostname }}
+        `[ -z "{{ hawkular_user }}" ] || echo "HAWKULAR_USER={{ hawkular_user }}"` \
+        `[ -z "{{ hawkular_password }}" ] || echo "HAWKULAR_PASSWORD={{ hawkular_password }}"` \
         ROUTE_NAME={{ route_name }}
         | oc create -f -
       register: command_result
@@ -137,7 +139,9 @@
         oc process -f ./hawkular-services-persistent.yaml
         --param HAWKULAR_SERVICES_IMAGE={{ hawkular_services_image }}
         --param CASSANDRA_IMAGE={{ cassandra_image }}
-        --param ROUTE_HOSTNAME= {{ route_hostname }}
+        --param ROUTE_HOSTNAME={{ route_hostname }}
+        `[ -z "{{ hawkular_user }}" ] || echo "--param HAWKULAR_USER={{ hawkular_user }}"` \
+        `[ -z "{{ hawkular_password }}" ] || echo "--param HAWKULAR_PASSWORD={{ hawkular_password }}"` \
         --param ROUTE_NAME={{ route_name }}
         | oc create -f -
       register: command_result
@@ -145,14 +149,23 @@
       failed_when: "'exists' not in command_result.stderr and command_result.rc != 0"
       changed_when: "'exists' not in command_result.stderr"
 
-    - name: Print out the hawkular-services address
+    - name: Get the hawkular-services address
       shell: "oc get route {{ route_name }} | grep {{ route_name }} | awk '{print $2}'"
       register: hawkular_services_address
+
+    - name: Get the hawkular-services username
+      shell: oc env dc/hawkular-services --list | grep HAWKULAR_USER | cut -f2 -d'='
+      register: real_hawkular_user
+
+    - name: Get the hawkular-services password
+      shell: oc env dc/hawkular-services --list | grep HAWKULAR_PASSWORD | cut -f2 -d'='
+      register: real_hawkular_password
 
     - name: Print out the hawkular-services address
       debug:
         msg:
           - "The hostname for the Hawkular Services service is: http://{{ hawkular_services_address.stdout }}"
-          - "Credentials are jdoe:password"
+          - "Username: {{ real_hawkular_user.stdout }}"
+          - "Password: {{ real_hawkular_password.stdout }}"
           - "It may take a minute or two to spin the containers. Especially if it is pulling the images."
           - "Consider running   watch oc get pod -l name=hawkular-services    ..to find out when it is ready."

@@ -2,10 +2,15 @@
 Hawkular Services OpenShift Template
 ------------------------------------
 
-Using this template, user should be able to run the Hawkular Services
-in the OpenShift cluster.
+There are currently two OpenShift templates. The first one, called
+`hawkular-services-ephemeral.yaml`, is only for the demo purposes, because
+the data is lost during the restarts. The second one, called
+`hawkular-services-persistent.yaml`, preserves also the data.
 
-To do that, just run:
+Persistent Template
+-------------------
+
+In order to run the Hawkular Services with the persistent template, just run:
 
 [source,bash]
 ----
@@ -16,7 +21,10 @@ NOTE: It asks for the root password because it is necessary for flushing the
       ip tables and creating the directories for persistent volumes.
 
 This runs the Hawkular Services and create two persistent volumes, so
-that you do not lose your data when restarting openshift.
+that you do not lose your data when restarting OpenShift.
+
+Ephemeral Template
+------------------
 
 If you want to start Hawkular Services and you don’t care about your
 data, use:
@@ -34,8 +42,8 @@ TIP: The behavior of the `startEphemeral.sh` script can be customized by environ
 [[prerequisites]]
 Prerequisites
 ~~~~~~~~~~~~~
-
-The `ansible`, `origin-clients`, `python2-dnf` and `libselinux-python` packages should be installed.
+When using the ansible playbook, the `ansible`, `origin-clients`, `python2-dnf` and `libselinux-python` packages should
+ be installed.
 
 ....
 sudo dnf install -y ansible python2-dnf libselinux-python origin-clients
@@ -58,7 +66,7 @@ configuration and restart the docker:
 
 Edit `/etc/sysconfig/docker` or `/etc/docker/daemon.json` depending on
 your docker and run
-`sudo systemctl daemon-reload && sudo systemctl restart docker`.
+`sudo systemctl restart docker`.
 
 [[troubleshooting]]
 Troubleshooting
@@ -76,7 +84,7 @@ help, I had to do:
 
 [source,bash]
 ----
-sudo systemctl stop firewalld.service rpcbind.service rpcbind.socket
+sudo systemctl stop firewalld.service
 ----
 
 You can see the hawkular-services logs by

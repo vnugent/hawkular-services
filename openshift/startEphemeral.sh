@@ -36,6 +36,8 @@ echo_vars(){
   echo "ROUTE_NAME=$ROUTE_NAME"
   echo "ROUTE_HOSTNAME=$ROUTE_HOSTNAME"
   echo "TEMPLATE=$TEMPLATE"
+  echo "HAWKULAR_USER=$HAWKULAR_USER"
+  echo "HAWKULAR_PASSWORD=$HAWKULAR_PASSWORD"
   echo -e "FLUSH_IP_TABLES=$FLUSH_IP_TABLES\n\n"
 }
 
@@ -54,12 +56,16 @@ instantiate_template(){
     oc process -f $TEMPLATE -v HAWKULAR_SERVICES_IMAGE="$HAWKULAR_SERVICES_IMAGE" \
                                CASSANDRA_IMAGE="$CASSANDRA_IMAGE" \
                                ROUTE_HOSTNAME="$ROUTE_HOSTNAME" \
+                               `[ -z "$HAWKULAR_USER" ] || echo "HAWKULAR_USER=$HAWKULAR_USER"` \
+                               `[ -z "$HAWKULAR_PASSWORD" ] || echo "HAWKULAR_PASSWORD=$HAWKULAR_PASSWORD"` \
                                ROUTE_NAME="$ROUTE_NAME" | oc create -f -
   else
     # using the new syntax
     oc process -f $TEMPLATE --param HAWKULAR_SERVICES_IMAGE="$HAWKULAR_SERVICES_IMAGE" \
                             --param CASSANDRA_IMAGE="$CASSANDRA_IMAGE" \
                             --param ROUTE_HOSTNAME="$ROUTE_HOSTNAME" \
+                            `[ -z "$HAWKULAR_USER" ] || echo "--param HAWKULAR_USER=$HAWKULAR_USER"` \
+                            `[ -z "$HAWKULAR_PASSWORD" ] || echo "--param HAWKULAR_PASSWORD=$HAWKULAR_PASSWORD"` \
                             --param ROUTE_NAME="$ROUTE_NAME" | oc create -f -
   fi
 }
@@ -81,7 +87,14 @@ wait_for_it(){
 
 tell_where_it_is_running(){
   URL=`oc get route $ROUTE_NAME 2> /dev/null | grep "$ROUTE_NAME" | awk '{print $2}'` && \
-  echo -e "\n\nYour Hawkular Services instance is prepared on $(tput setaf 2)http://$URL $(tput sgr0) \n"
+  echo -e "\n\nYour Hawkular Services instance is prepared on: $(tput setaf 2)http://$URL $(tput sgr0)"
+}
+
+tell_the_credentials(){
+  _USER=`oc get pod -l name=hawkular-services -o 'jsonpath={..env[?(@.name=="HAWKULAR_USER")].value}' 2> /dev/null` && \
+  _PASSWORD=`oc get pod -l name=hawkular-services -o 'jsonpath={..env[?(@.name=="HAWKULAR_PASSWORD")].value}' 2> /dev/null` && \
+  echo -e "                                      Username: $(tput setaf 2)$_USER$(tput sgr0)"
+  echo -e "                                      Password: $(tput setaf 2)$_PASSWORD$(tput sgr0)\n\n"
 }
 
 main(){
@@ -104,7 +117,8 @@ main(){
 
   instantiate_template && \
   wait_for_it && \
-  tell_where_it_is_running
+  tell_where_it_is_running && \
+  tell_the_credentials
 
   RETURN_CODE=$?
   if [[ $RETURN_CODE != 0 ]]; then

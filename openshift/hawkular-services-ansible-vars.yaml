@@ -39,3 +39,9 @@ flush_ip_tables: true
 create_openshift_cluster: true
 
 openshift_use_metrics: false
+
+# if left blank, it will be auto-generated
+hawkular_user: ""
+
+# if left blank, it will be auto-generated
+hawkular_password: ""
