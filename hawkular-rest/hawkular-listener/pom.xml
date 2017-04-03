@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-api-parent</artifactId>
-    <version>0.34.0.Final-SNAPSHOT</version>
+    <version>0.34.0.Final</version>
   </parent>
 
   <artifactId>hawkular-listener</artifactId>
-  <version>0.34.0.Final-SNAPSHOT</version>
+  <version>0.34.0.Final</version>
   <packaging>jar</packaging>
 
   <name>Hawkular REST: Listener</name>
