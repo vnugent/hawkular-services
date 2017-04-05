@@ -63,6 +63,10 @@ parameters:
   displayName: Hawkular Password
   from: '[a-zA-Z0-9]{16}'
   generate: expression
+- name: METRICS_ADMIN_TOKEN
+  description: SHA-256 hashed Admin token for Metrics
+  displayName: METRICS ADMIN TOKEN
+  value: XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
 labels:
   template: hawkular-services
 message: Credentials for hawkular-services are ${HAWKULAR_USER}:${HAWKULAR_PASSWORD}
@@ -142,6 +146,8 @@ objects:
             value: ${HAWKULAR_USER}
           - name: HAWKULAR_PASSWORD
             value: ${HAWKULAR_PASSWORD}
+          - name: ADMIN_TOKEN
+            value: ${METRICS_ADMIN_TOKEN}
           imagePullPolicy: IfNotPresent
           name: hawkular-services
           volumeMounts:
